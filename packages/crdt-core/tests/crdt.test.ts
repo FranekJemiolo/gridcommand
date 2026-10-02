@@ -3,6 +3,9 @@ import { HLC } from '../src/hlc';
 import { chunkPayload, BLEChunkAssembler } from '../src/bleChunker';
 import { reduceGameState, reducePeers, reduceTacticalMarkers } from '../src/reducer';
 import { MissionGraph, CRDTEventValue } from '../src/types';
+import { latLonToMGRS, latLonToUTM } from '../src/mgrs';
+import { computeElevationProfile, getTerrainElevation } from '../src/elevationProfile';
+import { OfflineMapStorageManager } from '../src/offlineMapManager';
 
 describe('Hybrid Logical Clock (HLC)', () => {
   it('generates monotonic timestamps with device fingerprint', () => {
@@ -262,5 +265,70 @@ describe('Field SPOTREP Tactical Markers', () => {
     expect(updated.size).toBe(1);
     expect(updated.has('marker_01')).toBe(false);
     expect(updated.has('marker_02')).toBe(true);
+  });
+});
+
+describe('Military Grid Reference System (MGRS)', () => {
+  it('correctly converts Gdańsk coordinates to UTM Zone 34U', () => {
+    // Gdańsk Oliwa coordinates (54.4080° N, 18.5385° E)
+    const utm = latLonToUTM(54.408, 18.5385);
+    expect(utm.zone).toBe(34);
+    expect(utm.band).toBe('U');
+    expect(utm.easting).toBeGreaterThan(300000);
+    expect(utm.easting).toBeLessThan(400000);
+    expect(utm.northing).toBeGreaterThan(6000000);
+  });
+
+  it('formats valid 10-figure MGRS string for field operations', () => {
+    const mgrs = latLonToMGRS(54.408, 18.5385, 5);
+    expect(mgrs.zone).toBe(34);
+    expect(mgrs.band).toBe('U');
+    expect(mgrs.squareId.length).toBe(2);
+    expect(mgrs.formatted).toMatch(/^34U [A-Z]{2} \d{5} \d{5}$/);
+  });
+});
+
+describe('Terrain Elevation & Line-of-Sight (LOS) Engine', () => {
+  it('returns topographical elevations across moraine terrain', () => {
+    // Pachołek peak should have substantial elevation
+    const pacholekElev = getTerrainElevation(54.4095, 18.541);
+    expect(pacholekElev).toBeGreaterThan(50);
+  });
+
+  it('computes elevation profile slice and detects line of sight status', () => {
+    const start = { lat: 54.408, lon: 18.5385, alt: 60 };
+    const target = { lat: 54.4095, lon: 18.541, alt: 110 };
+
+    const analysis = computeElevationProfile(start, target, 20);
+    expect(analysis.distanceMeters).toBeGreaterThan(150);
+    expect(analysis.distanceMeters).toBeLessThan(400);
+    expect(analysis.bearingDeg).toBeGreaterThan(0);
+    expect(analysis.bearingDeg).toBeLessThan(90);
+    expect(analysis.profile.length).toBe(21);
+    expect(analysis.fresnelRadiusMidpointMeters).toBeGreaterThan(0);
+  });
+});
+
+describe('Offline Map Pack Storage Manager', () => {
+  it('lists predefined operational sectors with storage metadata', () => {
+    const sectors = OfflineMapStorageManager.getSectors();
+    expect(sectors.length).toBeGreaterThanOrEqual(3);
+    const oliwa = sectors.find((s) => s.id === 'gdansk_oliwa_tactical');
+    expect(oliwa).toBeDefined();
+    expect(oliwa?.sizeMb).toBeGreaterThan(10);
+    expect(oliwa?.isCached).toBe(true);
+  });
+
+  it('downloads and purges sector cache properly', async () => {
+    expect(OfflineMapStorageManager.isSectorCached('katowice_forest_grid')).toBe(false);
+    let progressReached = 0;
+    await OfflineMapStorageManager.downloadSector('katowice_forest_grid', (p) => {
+      progressReached = p;
+    });
+    expect(progressReached).toBe(100);
+    expect(OfflineMapStorageManager.isSectorCached('katowice_forest_grid')).toBe(true);
+
+    await OfflineMapStorageManager.purgeSector('katowice_forest_grid');
+    expect(OfflineMapStorageManager.isSectorCached('katowice_forest_grid')).toBe(false);
   });
 });

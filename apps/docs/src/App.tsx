@@ -14,7 +14,8 @@ import {
   Github,
   BookOpen,
 } from 'lucide-react';
-import { TacticalButton, StatusBadge, CompassBearing, TacticalAudioEngine } from '@gridcommand/ui-theme';
+import { TacticalButton, StatusBadge, CompassBearing, TacticalAudioEngine, ElevationProfileWidget } from '@gridcommand/ui-theme';
+import { latLonToMGRS, computeElevationProfile } from '@gridcommand/crdt-core';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'mobile-hud' | 'gm-center' | 'mesh-sim' | 'bom' | 'roadmap'>('overview');
@@ -22,6 +23,24 @@ export const App: React.FC = () => {
   const [demoRainLock, setDemoRainLock] = useState(false);
   const [demoCaptured, setDemoCaptured] = useState(false);
   const [audioFeedbackText, setAudioFeedbackText] = useState<string | null>(null);
+
+  // Milestone 2 Interactive Demo State
+  const [mgrsLat, setMgrsLat] = useState(54.4095);
+  const [mgrsLon, setMgrsLon] = useState(18.541);
+  const [losTarget, setLosTarget] = useState<'radar' | 'valley' | 'pacholek'>('radar');
+
+  const mgrsCoord = latLonToMGRS(mgrsLat, mgrsLon);
+  const losTargets = {
+    radar: { name: 'Radar HQ Trzy Szczyty', lat: 54.398, lon: 18.519 },
+    valley: { name: 'Redoubt Dolina Radości (Depression)', lat: 54.402, lon: 18.528 },
+    pacholek: { name: 'Bunker Pachołek Moraine Crest', lat: 54.4095, lon: 18.541 },
+  };
+  const activeLosTarget = losTargets[losTarget];
+  const docsLosAnalysis = computeElevationProfile(
+    { lat: 54.405, lon: 18.535 },
+    { lat: activeLosTarget.lat, lon: activeLosTarget.lon },
+    32
+  );
 
   const triggerAudioDemo = (cue: 'CONTACT' | 'ARTILLERY' | 'CAPTURE' | 'FREEZE' | 'PING', desc: string) => {
     TacticalAudioEngine.play(cue, { enableHaptics: true });
@@ -621,38 +640,176 @@ export const App: React.FC = () => {
               </div>
 
               {/* Milestone 2 */}
-              <div className="p-6 rounded-xl bg-[#141c14] border border-[#2e3d2e] space-y-4">
+              <div className="p-6 rounded-xl bg-[#141c14] border-2 border-[#4e9b4e] space-y-5">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-3">
-                    <span className="px-2.5 py-1 rounded bg-[#f5b700]/20 border border-[#f5b700] text-[#f5b700] text-xs font-black">
+                    <span className="px-2.5 py-1 rounded bg-[#4e9b4e]/30 border border-[#4e9b4e] text-[#68d391] text-xs font-black">
                       MILESTONE 2
                     </span>
                     <h3 className="text-lg font-bold text-white">
                       Offline Map Packs &amp; Terrain Elevation Profile
                     </h3>
                   </div>
-                  <span className="text-xs px-2.5 py-1 rounded bg-[#f5b700]/10 text-[#f5b700] font-bold border border-[#f5b700]/40">
-                    QUEUED // STAGE 2
+                  <span className="text-xs px-2.5 py-1 rounded bg-[#4e9b4e]/20 text-[#68d391] font-bold border border-[#4e9b4e]">
+                    ✓ OPERATIONAL &amp; VERIFIED
                   </span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs pt-2">
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs pt-1">
                   <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
-                    <div className="text-[#c7a76c] font-bold">Offline Sector Storage Manager</div>
+                    <div className="text-[#f5b700] font-bold">Offline Sector Storage Manager</div>
                     <p className="text-[#9ba89b] text-[11px] leading-relaxed">
-                      Client-side IndexedDB map pack download manager. Pre-cache 10km² tactical sectors at high zoom levels with offline storage quotas.
+                      IndexedDB &amp; Cache API storage engine. Pre-download 5km²-20km² tactical sectors at zoom levels 12-17 with quota telemetry, progress simulation, and cache purge.
                     </p>
                   </div>
                   <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
-                    <div className="text-[#c7a76c] font-bold">Line-of-Sight &amp; Elevation Profile</div>
+                    <div className="text-[#f5b700] font-bold">Line-of-Sight &amp; Elevation Profile</div>
                     <p className="text-[#9ba89b] text-[11px] leading-relaxed">
-                      Digital elevation contour slice calculations between operator GPS coordinates and objectives, highlighting blocked radio and visual paths.
+                      High-resolution terrain elevation slice calculation, optical line-of-sight raycasting, moraine ridge blockage detection, and 868 MHz LoRa Fresnel radio clearance boundary.
                     </p>
                   </div>
                   <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
-                    <div className="text-[#c7a76c] font-bold">MGRS / UTM Coordinate Engine</div>
+                    <div className="text-[#f5b700] font-bold">MGRS / UTM Coordinate Engine</div>
                     <p className="text-[#9ba89b] text-[11px] leading-relaxed">
-                      Military Grid Reference System 10-figure conversion engine for standard NATO radio communication and coordination.
+                      Real-time NATO 10-figure Military Grid Reference System (MGRS) conversion (e.g. <span className="text-[#f5b700] font-mono">34U DA 35124 28941</span>) with ellipsoid datum projections.
                     </p>
+                  </div>
+                </div>
+
+                {/* Milestone 2 Live Interactive Laboratory */}
+                <div className="pt-4 border-t border-[#2e3d2e] space-y-6">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-[#f5b700] rounded-sm" />
+                    <span className="text-xs font-black uppercase text-[#f5b700] tracking-wider">
+                      MILESTONE 2 INTERACTIVE FIELD SIMULATION LABORATORY
+                    </span>
+                  </div>
+
+                  {/* Section A: Real-Time NATO 10-Figure MGRS Converter */}
+                  <div className="p-4 rounded-lg bg-[#0b0f0b] border border-[#3b5323] space-y-3">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-[#f5b700]" />
+                        1. NATO 10-Figure MGRS / UTM Coordinate Transceiver
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => { setMgrsLat(54.4095); setMgrsLon(18.5410); }}
+                          className="px-2 py-0.5 rounded bg-[#1c261c] border border-[#2e3d2e] hover:border-[#f5b700] text-[10px] text-[#e8ede8]"
+                        >
+                          Gdańsk Oliwa
+                        </button>
+                        <button
+                          onClick={() => { setMgrsLat(50.215); setMgrsLon(19.045); }}
+                          className="px-2 py-0.5 rounded bg-[#1c261c] border border-[#2e3d2e] hover:border-[#f5b700] text-[10px] text-[#e8ede8]"
+                        >
+                          Katowice Murcki
+                        </button>
+                        <button
+                          onClick={() => { setMgrsLat(52.335); setMgrsLon(20.710); }}
+                          className="px-2 py-0.5 rounded bg-[#1c261c] border border-[#2e3d2e] hover:border-[#f5b700] text-[10px] text-[#e8ede8]"
+                        >
+                          Kampinos Delta
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                      <div className="p-2.5 rounded bg-[#141c14] border border-[#2e3d2e]">
+                        <div className="text-[10px] text-[#9ba89b]">UTM GRID ZONE</div>
+                        <div className="text-sm font-black text-[#f5b700]">{mgrsCoord.zone}{mgrsCoord.band}</div>
+                      </div>
+                      <div className="p-2.5 rounded bg-[#141c14] border border-[#2e3d2e]">
+                        <div className="text-[10px] text-[#9ba89b]">100KM SQUARE ID</div>
+                        <div className="text-sm font-black text-[#f5b700]">{mgrsCoord.squareId}</div>
+                      </div>
+                      <div className="p-2.5 rounded bg-[#141c14] border border-[#2e3d2e]">
+                        <div className="text-[10px] text-[#9ba89b]">EASTING (5-DIGIT)</div>
+                        <div className="text-sm font-mono font-bold text-[#68d391]">{mgrsCoord.easting}</div>
+                      </div>
+                      <div className="p-2.5 rounded bg-[#141c14] border border-[#2e3d2e]">
+                        <div className="text-[10px] text-[#9ba89b]">NORTHING (5-DIGIT)</div>
+                        <div className="text-sm font-mono font-bold text-[#68d391]">{mgrsCoord.northing}</div>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded bg-[#1c261c] border border-[#4e9b4e] flex items-center justify-between">
+                      <span className="text-[11px] text-[#9ba89b]">STANDARD NATO FORMATTED STRING:</span>
+                      <span className="text-sm sm:text-base font-black font-mono text-[#f5b700] tracking-wider">
+                        {mgrsCoord.formatted}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Section B: Line-of-Sight & Elevation Cross-Section Analyzer */}
+                  <div className="p-4 rounded-lg bg-[#0b0f0b] border border-[#3b5323] space-y-3">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-[#68d391]" />
+                        2. Line-of-Sight (LOS) &amp; Fresnel Radio Clearance Simulator
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-[#9ba89b]">SELECT TARGET:</span>
+                        <select
+                          value={losTarget}
+                          onChange={(e) => setLosTarget(e.target.value as any)}
+                          className="bg-[#141c14] border border-[#2e3d2e] text-[#f5b700] rounded px-2 py-1 text-xs"
+                        >
+                          <option value="radar">Radar HQ Trzy Szczyty (High Mast)</option>
+                          <option value="valley">Redoubt Dolina Radości (Depression / Blocked)</option>
+                          <option value="pacholek">Bunker Pachołek (Moraine Crest)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="w-full">
+                      <ElevationProfileWidget
+                        analysis={docsLosAnalysis}
+                        targetName={activeLosTarget.name}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Section C: Offline Map Storage Sector Status */}
+                  <div className="p-4 rounded-lg bg-[#0b0f0b] border border-[#3b5323] space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-[#c7a76c]" />
+                        3. Pre-Packaged Offline Sectors (IndexedDB / Cache API)
+                      </div>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-[#4e9b4e]/20 border border-[#4e9b4e] text-[#68d391] font-bold">
+                        STORAGE USAGE: 142.2 MB / 2,048 MB (6.9%)
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                      <div className="p-3 rounded bg-[#141c14] border border-[#4e9b4e]">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-white">Gdańsk Oliwa Hills</span>
+                          <span className="text-[10px] text-[#68d391] font-bold">CACHED ✓</span>
+                        </div>
+                        <div className="text-[10px] text-[#9ba89b]">Coverage: 12.5 km² • Zooms 12-17</div>
+                        <div className="text-[10px] text-[#f5b700] mt-1 font-mono">Size: 48.4 MB (1,240 tiles)</div>
+                      </div>
+
+                      <div className="p-3 rounded bg-[#141c14] border border-[#4e9b4e]">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-white">Katowice Murcki</span>
+                          <span className="text-[10px] text-[#68d391] font-bold">CACHED ✓</span>
+                        </div>
+                        <div className="text-[10px] text-[#9ba89b]">Coverage: 15.0 km² • Zooms 12-17</div>
+                        <div className="text-[10px] text-[#f5b700] mt-1 font-mono">Size: 56.1 MB (1,480 tiles)</div>
+                      </div>
+
+                      <div className="p-3 rounded bg-[#141c14] border border-[#4e9b4e]">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-white">Kampinos Delta</span>
+                          <span className="text-[10px] text-[#68d391] font-bold">CACHED ✓</span>
+                        </div>
+                        <div className="text-[10px] text-[#9ba89b]">Coverage: 8.8 km² • Zooms 12-17</div>
+                        <div className="text-[10px] text-[#f5b700] mt-1 font-mono">Size: 37.7 MB (980 tiles)</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

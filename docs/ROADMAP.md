@@ -132,5 +132,8 @@ timeline
 ## 🚀 Execution Strategy
 
 Milestones are prioritized sequentially:
-1. **Milestone 1**: Active implementation underway across CRDT core, mobile HUD, and GM dashboard.
-2. **Milestones 2–5**: Progressive implementation schedule with test coverage and visual verification.
+1. **Milestone 1**: `✓ COMPLETED & VERIFIED` (Blue Force Tracking, Acoustic Earcons, SPOTREP quick markers).
+2. **Milestone 2**: `✓ COMPLETED & VERIFIED` (Offline map storage manager, line-of-sight & terrain elevation profile analyzer, NATO 10-figure MGRS engine).
+3. **Milestone 3**: `IN PLANNING` (Dynamic DAG mission graph builder, squad roster, signed manifests).
+4. **Milestone 4**: `SCHEDULED` (3D spatial AAR playback, cryptographic anti-cheat validation).
+5. **Milestone 5**: `SCHEDULED` (Sub-GHz LoRa transceiver bridge, wearable wrist HUD).

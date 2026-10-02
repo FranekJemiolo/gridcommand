@@ -10,6 +10,9 @@ import { TacticalMap } from './components/TacticalMap';
 import { GlovePinModal } from './components/GlovePinModal';
 import { ScannerModal } from './components/ScannerModal';
 import { SpotrepModal } from './components/SpotrepModal';
+import { ElevationProfileModal } from './components/ElevationProfileModal';
+import { OfflineSectorModal } from './components/OfflineSectorModal';
+import { latLonToMGRS } from '@gridcommand/crdt-core';
 
 export const App: React.FC = () => {
   const {
@@ -43,9 +46,13 @@ export const App: React.FC = () => {
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isSpotrepOpen, setIsSpotrepOpen] = useState(false);
+  const [isElevationModalOpen, setIsElevationModalOpen] = useState(false);
+  const [isOfflineModalOpen, setIsOfflineModalOpen] = useState(false);
+  const [isCoordMgrs, setIsCoordMgrs] = useState(true);
   const [copiedNotification, setCopiedNotification] = useState(false);
 
   const activeNode = graph.nodes[activeObjectiveId];
+  const mgrsCoord = latLonToMGRS(location.lat, location.lon);
 
   // Calculate distance and bearing to current active objective
   let distanceMeters = 0;
@@ -90,7 +97,7 @@ export const App: React.FC = () => {
       />
 
       {/* Sub-Header: Sector & Mode Tabs */}
-      <div className="bg-[#141c14] border-b border-[#2e3d2e] px-3 py-1.5 flex items-center justify-between text-xs font-mono">
+      <div className="bg-[#141c14] border-b border-[#2e3d2e] px-3 py-1.5 flex items-center justify-between text-xs font-mono flex-wrap gap-2">
         <div className="flex items-center gap-1.5 overflow-x-auto">
           {(['hud', 'mesh', 'objectives', 'diagnostics'] as const).map((tab) => (
             <button
@@ -106,8 +113,19 @@ export const App: React.FC = () => {
             </button>
           ))}
         </div>
-        <div className="text-[10px] text-[#c7a76c] font-bold hidden sm:block">
-          GRID: GDAŃSK OLIWA (54.40°N, 18.53°E)
+        <div className="flex items-center gap-1.5 text-[10px]">
+          <button
+            onClick={() => setIsOfflineModalOpen(true)}
+            className="text-[#68d391] hover:text-[#f5b700] border border-[#2e3d2e] px-2 py-0.5 rounded bg-[#0b0f0b] font-bold flex items-center gap-1"
+          >
+            <span>💾 OFFLINE (18.4MB)</span>
+          </button>
+          <button
+            onClick={() => setIsCoordMgrs(!isCoordMgrs)}
+            className="text-[#c7a76c] font-bold border border-[#453724] px-2 py-0.5 rounded bg-[#1c261c] hover:border-[#f5b700]"
+          >
+            {isCoordMgrs ? `MGRS: ${mgrsCoord.formatted}` : `WGS84: ${location.lat.toFixed(4)}°N, ${location.lon.toFixed(4)}°E`}
+          </button>
         </div>
       </div>
 
@@ -162,15 +180,23 @@ export const App: React.FC = () => {
           {/* Bottom Rig Controls (60x60px touch zones) */}
           <div className="relative z-30 bg-[#141c14] border-t-2 border-[#2e3d2e] p-3 font-mono">
             <div className="max-w-md mx-auto flex flex-col gap-2">
-              <div className="flex items-center justify-between text-[11px] text-[#9ba89b] px-1">
+              <div className="flex items-center justify-between text-[11px] text-[#9ba89b] px-1 flex-wrap gap-1">
                 <span>DIST: {Math.round(distanceMeters)}m</span>
                 <span>BEARING: {Math.round(targetBearing).toString().padStart(3, '0')}°</span>
-                <button
-                  onClick={simulateStepCloser}
-                  className="text-[#f5b700] hover:underline uppercase font-bold"
-                >
-                  [Simulate Step Closer]
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setIsElevationModalOpen(true)}
+                    className="text-[#68d391] hover:underline uppercase font-bold text-[10px]"
+                  >
+                    [LOS / PROFILE]
+                  </button>
+                  <button
+                    onClick={simulateStepCloser}
+                    className="text-[#f5b700] hover:underline uppercase font-bold text-[10px]"
+                  >
+                    [Step Closer]
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2">
@@ -389,6 +415,18 @@ export const App: React.FC = () => {
         onSubmitSpotrep={(rep) => {
           dropMarker(rep);
         }}
+      />
+
+      <ElevationProfileModal
+        isOpen={isElevationModalOpen}
+        onClose={() => setIsElevationModalOpen(false)}
+        playerLocation={location}
+        activeObjective={activeNode || null}
+      />
+
+      <OfflineSectorModal
+        isOpen={isOfflineModalOpen}
+        onClose={() => setIsOfflineModalOpen(false)}
       />
     </div>
   );

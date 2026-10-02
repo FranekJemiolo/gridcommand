@@ -1,9 +1,11 @@
-import React from 'react';
-import { useGMStore } from './stores/gmStore';
+import React, { useState } from 'react';
+import { useGMStore, TacticalHex } from './stores/gmStore';
 import { TacticalHexMap } from './components/TacticalHexMap';
 import { TemporalScrubber } from './components/TemporalScrubber';
 import { EventTicker } from './components/EventTicker';
 import { AdminConsole } from './components/AdminConsole';
+import { latLonToMGRS, computeElevationProfile } from '@gridcommand/crdt-core';
+import { ElevationProfileWidget, TacticalButton } from '@gridcommand/ui-theme';
 
 export const App: React.FC = () => {
   const {
@@ -24,6 +26,14 @@ export const App: React.FC = () => {
     injectHazard,
   } = useGMStore();
 
+  const [selectedHex, setSelectedHex] = useState<TacticalHex | null>(null);
+  const [showLosModal, setShowLosModal] = useState<boolean>(false);
+
+  // Default GM Basecamp coordinates in Oliwa
+  const basecampLat = 54.4095;
+  const basecampLon = 18.541;
+  const basecampMGRS = latLonToMGRS(basecampLat, basecampLon).formatted;
+
   // Calculate squad scores
   let alphaScore = 0;
   let bravoScore = 0;
@@ -34,10 +44,20 @@ export const App: React.FC = () => {
     }
   });
 
+  // Calculate LOS analysis between basecamp and selected hex or default bunker
+  const targetLon = selectedHex ? selectedHex.coordinates[0] : 18.519;
+  const targetLat = selectedHex ? selectedHex.coordinates[1] : 54.398;
+  const targetName = selectedHex ? (selectedHex.label || selectedHex.id) : 'Radar HQ Trzy Szczyty';
+  const losAnalysis = computeElevationProfile(
+    { lat: basecampLat, lon: basecampLon },
+    { lat: targetLat, lon: targetLon },
+    32
+  );
+
   return (
     <div className="relative w-full h-full flex flex-col bg-[#0b0f0b] text-[#e8ede8] overflow-hidden select-none font-mono">
-      {/* Top Bar: Match Identification & Squad Scores */}
-      <header className="w-full bg-[#141c14] border-b-2 border-[#2e3d2e] px-4 py-2 flex items-center justify-between text-xs">
+      {/* Top Bar: Match Identification, MGRS Grid, Offline Cache, Squad Scores */}
+      <header className="w-full bg-[#141c14] border-b-2 border-[#2e3d2e] px-4 py-2 flex items-center justify-between text-xs flex-wrap gap-2">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 font-black text-[#f5b700] text-sm">
             <span className="w-2.5 h-2.5 bg-[#f5b700] rounded-sm" />
@@ -45,18 +65,30 @@ export const App: React.FC = () => {
           </div>
           <span className="text-[#c7a76c]">MATCH: {matchId}</span>
           <span className="text-[10px] px-2 py-0.5 rounded border border-[#4e9b4e] bg-[#4e9b4e]/20 text-[#68d391]">
-            DAG STATE: RECONCILED
+            DAG: RECONCILED
+          </span>
+          <span className="hidden lg:inline-flex text-[10px] px-2 py-0.5 rounded border border-[#f5b700]/50 bg-[#f5b700]/10 text-[#f5b700]">
+            HQ MGRS: {basecampMGRS}
+          </span>
+          <span className="hidden xl:inline-flex text-[10px] px-2 py-0.5 rounded border border-[#2e3d2e] bg-[#1c261c] text-[#9ba89b]">
+            OFFLINE CACHE: 3 SECTORS (142MB)
           </span>
         </div>
 
-        {/* Live Scoreboard */}
-        <div className="flex items-center gap-4 text-xs font-black">
+        {/* Live Scoreboard & Quick LOS Button */}
+        <div className="flex items-center gap-3 text-xs font-black">
+          <button
+            onClick={() => setShowLosModal(true)}
+            className="px-2.5 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#f5b700] text-[#f5b700] rounded text-[11px] font-bold flex items-center gap-1.5 transition-colors"
+          >
+            <span>📡 TERRAIN LOS ANALYZER</span>
+          </button>
           <div className="flex items-center gap-1.5 px-3 py-1 bg-[#4e9b4e]/20 border border-[#4e9b4e] text-[#68d391] rounded">
-            <span>SQUAD ALPHA (OLIVE):</span>
+            <span>ALPHA:</span>
             <span>{alphaScore} PTS</span>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1 bg-[#8a6240]/25 border border-[#a67c52] text-[#d4a373] rounded">
-            <span>SQUAD BRAVO (COYOTE):</span>
+            <span>BRAVO:</span>
             <span>{bravoScore} PTS</span>
           </div>
         </div>
@@ -82,7 +114,61 @@ export const App: React.FC = () => {
       <div className="flex-1 flex w-full overflow-hidden relative">
         {/* 3D Hex Battle Map */}
         <div className="flex-1 h-full relative">
-          <TacticalHexMap hexes={hexes} peers={peers} markers={markers} />
+          <TacticalHexMap
+            hexes={hexes}
+            peers={peers}
+            markers={markers}
+            onSelectHex={(hex) => setSelectedHex(hex)}
+          />
+
+          {/* Hex Inspector Popover when a hex is selected */}
+          {selectedHex && (
+            <div className="absolute top-16 left-4 z-30 w-80 bg-[#141c14]/95 border-2 border-[#f5b700] p-3.5 rounded shadow-2xl backdrop-blur-md text-xs">
+              <div className="flex items-center justify-between border-b border-[#2e3d2e] pb-1.5 mb-2">
+                <span className="font-black text-[#f5b700] uppercase text-[11px]">
+                  SECTOR INSPECTOR // {selectedHex.label || selectedHex.id}
+                </span>
+                <button
+                  onClick={() => setSelectedHex(null)}
+                  className="text-[#9ba89b] hover:text-white font-black"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-1.5 text-[11px]">
+                <div className="flex justify-between">
+                  <span className="text-[#9ba89b]">NATO 10-FIG MGRS:</span>
+                  <span className="text-[#f5b700] font-bold">
+                    {latLonToMGRS(selectedHex.coordinates[1], selectedHex.coordinates[0]).formatted}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#9ba89b]">WGS84 LAT/LON:</span>
+                  <span className="text-[#e8ede8]">
+                    {selectedHex.coordinates[1].toFixed(4)}°N, {selectedHex.coordinates[0].toFixed(4)}°E
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#9ba89b]">ELEVATION ASL:</span>
+                  <span className="text-[#68d391] font-bold">{selectedHex.elevation} m</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#9ba89b]">STATUS / CONTROLLER:</span>
+                  <span className="font-bold uppercase text-[#e8ede8]">{selectedHex.owner}</span>
+                </div>
+              </div>
+
+              <div className="mt-3 pt-2 border-t border-[#2e3d2e] flex gap-2">
+                <button
+                  onClick={() => setShowLosModal(true)}
+                  className="w-full py-1.5 bg-[#f5b700]/20 hover:bg-[#f5b700]/30 border border-[#f5b700] text-[#f5b700] font-bold rounded text-[10px] uppercase transition-colors"
+                >
+                  ANALYZE LOS FROM HQ
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Active Hazard Countdown Widget */}
           {activeHazard && (
@@ -107,8 +193,49 @@ export const App: React.FC = () => {
         scrubPosition={scrubPosition}
         onScrub={setScrubPosition}
       />
+
+      {/* Line-of-Sight & Elevation Cross-Section Modal */}
+      {showLosModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-2xl bg-[#141c14] border-2 border-[#f5b700] rounded-lg shadow-2xl p-4 flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b border-[#2e3d2e] pb-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-[#f5b700] rounded-sm" />
+                <h3 className="text-sm font-black text-[#f5b700] uppercase tracking-wider">
+                  TACTICAL LINE-OF-SIGHT &amp; ELEVATION PROFILE
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowLosModal(false)}
+                className="text-[#9ba89b] hover:text-white font-black px-2 py-0.5 rounded"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="text-xs text-[#9ba89b]">
+              Vector: <span className="text-[#f5b700] font-bold">GM BASECAMP HQ (Oliwa)</span> ➔{' '}
+              <span className="text-[#68d391] font-bold">{targetName}</span>
+            </div>
+
+            <div className="w-full">
+              <ElevationProfileWidget
+                analysis={losAnalysis}
+                targetName={targetName}
+              />
+            </div>
+
+            <div className="flex justify-end pt-2 border-t border-[#2e3d2e]">
+              <TacticalButton size="compact" variant="yellow" onClick={() => setShowLosModal(false)}>
+                DISMISS ANALYZER
+              </TacticalButton>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default App;
+
