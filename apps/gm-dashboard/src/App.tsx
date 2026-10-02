@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useGMStore, TacticalHex } from './stores/gmStore';
 import { TacticalHexMap } from './components/TacticalHexMap';
 import { TemporalScrubber } from './components/TemporalScrubber';
@@ -14,11 +14,13 @@ import {
   reinstateOperator,
   createSignedMissionManifest,
   exportManifestToJSON,
+  generateAARMissionReplay,
   OperatorRosterEntry,
 } from '@gridcommand/crdt-core';
 import {
   ElevationProfileWidget,
   MissionDAGEditorWidget,
+  AARPlaybackWidget,
   TacticalButton,
 } from '@gridcommand/ui-theme';
 import { generateKeyPair, toHexString } from '@gridcommand/crypto';
@@ -46,7 +48,10 @@ export const App: React.FC = () => {
   const [selectedHex, setSelectedHex] = useState<TacticalHex | null>(null);
   const [showLosModal, setShowLosModal] = useState<boolean>(false);
   const [showMissionBuilder, setShowMissionBuilder] = useState<boolean>(false);
+  const [showAARModal, setShowAARModal] = useState<boolean>(false);
   const [roster, setRoster] = useState<OperatorRosterEntry[]>(getDefaultRoster());
+
+  const aarReplay = useMemo(() => generateAARMissionReplay('MISSION_GDANSK_2026', 1800), []);
 
   // Default GM Basecamp coordinates in Oliwa
   const basecampLat = 54.4095;
@@ -146,13 +151,19 @@ export const App: React.FC = () => {
             onClick={() => setShowMissionBuilder(true)}
             className="px-2.5 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#4e9b4e] text-[#68d391] rounded text-[11px] font-bold flex items-center gap-1.5 transition-colors"
           >
-            <span>🛠️ MISSION BUILDER (DAG &amp; ROSTER)</span>
+            <span>🛠️ MISSION BUILDER</span>
           </button>
           <button
             onClick={() => setShowLosModal(true)}
             className="px-2.5 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#f5b700] text-[#f5b700] rounded text-[11px] font-bold flex items-center gap-1.5 transition-colors"
           >
-            <span>📡 TERRAIN LOS ANALYZER</span>
+            <span>📡 LOS ANALYZER</span>
+          </button>
+          <button
+            onClick={() => setShowAARModal(true)}
+            className="px-2.5 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#38bdf8] text-[#38bdf8] rounded text-[11px] font-bold flex items-center gap-1.5 transition-colors"
+          >
+            <span>⏱️ AAR &amp; AUDIT</span>
           </button>
           <div className="flex items-center gap-1.5 px-3 py-1 bg-[#4e9b4e]/20 border border-[#4e9b4e] text-[#68d391] rounded">
             <span>ALPHA:</span>
@@ -338,6 +349,43 @@ export const App: React.FC = () => {
             <div className="flex justify-end pt-2 border-t border-[#2e3d2e]">
               <TacticalButton size="compact" variant="olive" onClick={() => setShowMissionBuilder(false)}>
                 CLOSE MISSION BUILDER
+              </TacticalButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Milestone 4: After-Action Review (AAR) & Cryptographic Audit Modal */}
+      {showAARModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-5xl max-h-[92vh] overflow-y-auto bg-[#141c14] border-2 border-[#38bdf8] rounded-lg shadow-2xl p-4 flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b border-[#2e3d2e] pb-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-[#38bdf8] rounded-sm" />
+                <h3 className="text-sm font-black text-[#38bdf8] uppercase tracking-wider">
+                  AFTER-ACTION REVIEW (AAR) &amp; CRYPTOGRAPHIC AUDIT CONSOLE
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowAARModal(false)}
+                className="text-[#9ba89b] hover:text-white font-black px-2 py-0.5 rounded"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="w-full">
+              <AARPlaybackWidget
+                durationSeconds={aarReplay.durationSeconds}
+                trajectories={aarReplay.trajectories as any}
+                bookmarks={aarReplay.bookmarks as any}
+                scoreTimeline={aarReplay.scoreTimeline as any}
+              />
+            </div>
+
+            <div className="flex justify-end pt-2 border-t border-[#2e3d2e]">
+              <TacticalButton size="compact" variant="olive" onClick={() => setShowAARModal(false)}>
+                CLOSE AAR CONSOLE
               </TacticalButton>
             </div>
           </div>

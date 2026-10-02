@@ -8,4 +8,6 @@ export * from './offlineMapManager';
 export * from './missionBuilder';
 export * from './squadRoster';
 export * from './missionManifest';
+export * from './aarEngine';
+export * from './antiCheatAudit';
 

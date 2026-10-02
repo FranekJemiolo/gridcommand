@@ -135,5 +135,5 @@ Milestones are prioritized sequentially:
 1. **Milestone 1**: `✓ COMPLETED & VERIFIED` (Blue Force Tracking, Acoustic Earcons, SPOTREP quick markers).
 2. **Milestone 2**: `✓ COMPLETED & VERIFIED` (Offline map storage manager, line-of-sight & terrain elevation profile analyzer, NATO 10-figure MGRS engine).
 3. **Milestone 3**: `✓ COMPLETED & VERIFIED` (Dynamic DAG mission graph builder, squad roster & keypair registry, signed Base45/JSON manifests).
-4. **Milestone 4**: `IN PLANNING` (3D spatial AAR playback, cryptographic anti-cheat validation).
+4. **Milestone 4**: `✓ COMPLETED & VERIFIED` (3D spatial AAR playback, timeline scrubber, event bookmarks, territory score dynamics, and physical/cryptographic anti-cheat audit engine).
 5. **Milestone 5**: `SCHEDULED` (Sub-GHz LoRa transceiver bridge, wearable wrist HUD).

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Shield,
   Radio,
@@ -21,6 +21,7 @@ import {
   TacticalAudioEngine,
   ElevationProfileWidget,
   MissionDAGEditorWidget,
+  AARPlaybackWidget,
 } from '@gridcommand/ui-theme';
 import {
   latLonToMGRS,
@@ -30,6 +31,7 @@ import {
   removeDependency,
   revokeOperator,
   reinstateOperator,
+  generateAARMissionReplay,
   MissionGraph,
   OperatorRosterEntry,
 } from '@gridcommand/crdt-core';
@@ -100,6 +102,9 @@ export const App: React.FC = () => {
     { lat: activeLosTarget.lat, lon: activeLosTarget.lon },
     32
   );
+
+  // Milestone 4 Interactive Demo State
+  const docsAAR = useMemo(() => generateAARMissionReplay('DOCS_DEMO_2026', 1800), []);
 
   const triggerAudioDemo = (cue: 'CONTACT' | 'ARTILLERY' | 'CAPTURE' | 'FREEZE' | 'PING', desc: string) => {
     TacticalAudioEngine.play(cue, { enableHaptics: true });
@@ -944,32 +949,52 @@ export const App: React.FC = () => {
               </div>
 
               {/* Milestone 4 */}
-              <div className="p-6 rounded-xl bg-[#141c14] border border-[#2e3d2e] space-y-4">
+              <div className="p-6 rounded-xl bg-[#141c14] border-2 border-[#4e9b4e] space-y-5">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-3">
-                    <span className="px-2.5 py-1 rounded bg-[#8a6240]/30 border border-[#8a6240] text-[#c7a76c] text-xs font-black">
+                    <span className="px-2.5 py-1 rounded bg-[#4e9b4e]/30 border border-[#4e9b4e] text-[#68d391] text-xs font-black">
                       MILESTONE 4
                     </span>
                     <h3 className="text-lg font-bold text-white">
                       After-Action Review (AAR) &amp; Cryptographic Audit
                     </h3>
                   </div>
-                  <span className="text-xs px-2.5 py-1 rounded bg-[#8a6240]/15 text-[#c7a76c] font-bold border border-[#8a6240]/40">
-                    SCHEDULED // STAGE 4
+                  <span className="text-xs px-2.5 py-1 rounded bg-[#4e9b4e]/20 text-[#68d391] font-bold border border-[#4e9b4e]">
+                    ✓ OPERATIONAL &amp; VERIFIED
                   </span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-2">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-1">
                   <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
                     <div className="text-[#f5b700] font-bold">3D Spatial Timeline Playback Engine</div>
                     <p className="text-[#9ba89b] text-[11px] leading-relaxed">
-                      Deck.gl TripsLayer spatial timeline replay showing full squad maneuvers, skirmishes, and territory capture speed curves with speed control (1x, 5x, 20x).
+                      High-fidelity spatial timeline replay showing full squad maneuvers, skirmishes, territory capture curves, tactical bookmarks, and variable speed control (1x, 5x, 20x).
                     </p>
                   </div>
                   <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
                     <div className="text-[#f5b700] font-bold">Cryptographic Anti-Cheat &amp; Compliance Audit</div>
                     <p className="text-[#9ba89b] text-[11px] leading-relaxed">
-                      Automated validation of all signed CRDT event logs against physical sensor bounds, outputting signed tamper-proof audit certificates for tournament and defense evaluations.
+                      Forensic invariant checker validating all signed CRDT event logs against physical sensor bounds (speed anomalies &gt;10 m/s, teleportation &gt;200m, clock rollback, geofence breaches, and Ed25519 signatures).
                     </p>
+                  </div>
+                </div>
+
+                {/* Milestone 4 Live Interactive Laboratory */}
+                <div className="pt-4 border-t border-[#2e3d2e] space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-2.5 h-2.5 bg-[#68d391] rounded-sm" />
+                    <span className="text-xs font-black uppercase text-[#68d391] tracking-wider">
+                      MILESTONE 4 INTERACTIVE AAR &amp; FORENSIC AUDIT LABORATORY
+                    </span>
+                  </div>
+
+                  <div className="w-full">
+                    <AARPlaybackWidget
+                      durationSeconds={docsAAR.durationSeconds}
+                      trajectories={docsAAR.trajectories as any}
+                      bookmarks={docsAAR.bookmarks as any}
+                      scoreTimeline={docsAAR.scoreTimeline as any}
+                    />
                   </div>
                 </div>
               </div>

@@ -27,6 +27,8 @@ import {
   exportManifestToJSON,
   importManifestFromJSON,
 } from '../src/missionManifest';
+import { generateAARMissionReplay, sampleAARStateAtTime } from '../src/aarEngine';
+import { runAntiCheatAudit } from '../src/antiCheatAudit';
 import { generateKeyPair, toHexString } from '@gridcommand/crypto';
 
 describe('Hybrid Logical Clock (HLC)', () => {
@@ -658,4 +660,191 @@ describe('Milestone 3: Signed Mission Manifest & Air-Gapped Base45 QR Exchange',
     expect(result.manifest?.missionId).toBe('JSON_MISSION_TEST');
   });
 });
+
+describe('Milestone 4: 3D Spatial AAR Playback Engine', () => {
+  it('generates tactical trajectories with realistic distances and speeds', () => {
+    const replay = generateAARMissionReplay('GDANSK_ALPHA_2026', 1800);
+    expect(replay.missionId).toBe('GDANSK_ALPHA_2026');
+    expect(replay.durationSeconds).toBe(1800);
+    expect(replay.trajectories.length).toBe(4);
+    expect(replay.bookmarks.length).toBeGreaterThan(0);
+    expect(replay.scoreTimeline.length).toBeGreaterThan(0);
+
+    for (const traj of replay.trajectories) {
+      expect(traj.path.length).toBeGreaterThan(50);
+      expect(traj.totalDistanceMeters).toBeGreaterThan(500);
+      expect(traj.totalDistanceMeters).toBeLessThan(10000);
+      expect(traj.maxSpeedMps).toBeGreaterThan(0);
+      expect(traj.maxSpeedMps).toBeLessThan(15); // reasonable foot / jog speed
+    }
+  });
+
+  it('samples replay state correctly at arbitrary timeline offsets', () => {
+    const replay = generateAARMissionReplay('GDANSK_ALPHA_2026', 1800);
+
+    // Sample at start (t = 0)
+    const stateStart = sampleAARStateAtTime(replay, 0);
+    expect(stateStart.currentScores.alpha).toBe(0);
+    expect(stateStart.currentScores.bravo).toBe(0);
+    expect(stateStart.passedBookmarks.length).toBe(0);
+    expect(Object.keys(stateStart.activePositions).length).toBe(4);
+
+    // Sample at midpoint (t = 900s / 15m)
+    const stateMid = sampleAARStateAtTime(replay, 900);
+    expect(stateMid.currentScores.alpha).toBeGreaterThanOrEqual(100);
+    expect(stateMid.passedBookmarks.length).toBeGreaterThanOrEqual(2);
+
+    // Sample at end (t = 1800s / 30m)
+    const stateEnd = sampleAARStateAtTime(replay, 1800);
+    expect(stateEnd.currentScores.alpha).toBe(350);
+    expect(stateEnd.currentScores.bravo).toBe(500);
+    expect(stateEnd.passedBookmarks.length).toBe(replay.bookmarks.length);
+  });
+});
+
+describe('Milestone 4: Cryptographic Proof & Anti-Cheat Audit Engine', () => {
+  const sampleRoster = getDefaultRoster();
+  const sampleGraph: MissionGraph = {
+    nodes: {
+      bunker_01: {
+        id: 'bunker_01',
+        name: 'Bunker Pachołek',
+        prerequisites: [],
+        status: 'ACTIVE',
+        owner: null,
+        points: 100,
+        decayRatePerMin: 0,
+        lat: 54.4095,
+        lon: 18.541,
+        geofenceRadiusMeters: 50,
+      },
+    },
+  };
+
+  it('passes clean event logs with 100/100 integrity score', () => {
+    const cleanEvents: Record<string, CRDTEventValue> = {
+      '2026-10-02T14:00:00.000Z-0000-dev1': {
+        t: 'BFT',
+        sq: 'squad_alpha',
+        opr: 'op_alpha_1',
+        dat: { lat: 54.4095, lon: 18.541 },
+      },
+      '2026-10-02T14:00:10.000Z-0000-dev1': {
+        t: 'BFT',
+        sq: 'squad_alpha',
+        opr: 'op_alpha_1',
+        dat: { lat: 54.4096, lon: 18.5411 },
+      },
+    };
+
+    const report = runAntiCheatAudit({
+      missionId: 'TEST_CLEAN',
+      events: cleanEvents,
+      roster: sampleRoster,
+      graph: sampleGraph,
+      currentTime: Date.parse('2026-10-02T14:01:00.000Z'),
+    });
+
+    expect(report.passed).toBe(true);
+    expect(report.integrityScore).toBe(100);
+    expect(report.anomalies.length).toBe(0);
+  });
+
+  it('detects and flags speed anomalies (vehicle exploit / impossible sprint)', () => {
+    const speedEvents: Record<string, CRDTEventValue> = {
+      '2026-10-02T14:00:00.000Z-0000-dev1': {
+        t: 'BFT',
+        sq: 'squad_alpha',
+        opr: 'op_alpha_1',
+        dat: { lat: 54.4095, lon: 18.541 },
+      },
+      '2026-10-02T14:00:05.000Z-0000-dev1': {
+        // Moved ~500m in 5 seconds (100 m/s = 360 km/h)
+        t: 'BFT',
+        sq: 'squad_alpha',
+        opr: 'op_alpha_1',
+        dat: { lat: 54.414, lon: 18.541 },
+      },
+    };
+
+    const report = runAntiCheatAudit({
+      events: speedEvents,
+      roster: sampleRoster,
+      graph: sampleGraph,
+      maxSpeedMps: 10,
+      currentTime: Date.parse('2026-10-02T14:01:00.000Z'),
+    });
+
+    expect(report.anomalies.length).toBeGreaterThan(0);
+    const speedAnom = report.anomalies.find((a) => a.type === 'SPEED_ANOMALY' || a.type === 'TELEPORTATION');
+    expect(speedAnom).toBeDefined();
+    expect(report.integrityScore).toBeLessThan(100);
+  });
+
+  it('detects and flags future clock skew', () => {
+    const futureEvents: Record<string, CRDTEventValue> = {
+      '2026-10-02T15:00:00.000Z-0000-dev1': {
+        t: 'BFT',
+        sq: 'squad_alpha',
+        opr: 'op_alpha_1',
+        dat: { lat: 54.4095, lon: 18.541 },
+      },
+    };
+
+    const report = runAntiCheatAudit({
+      events: futureEvents,
+      roster: sampleRoster,
+      currentTime: Date.parse('2026-10-02T14:00:00.000Z'), // 1 hour behind event
+    });
+
+    expect(report.anomalies.some((a) => a.type === 'CLOCK_SKEW_FUTURE')).toBe(true);
+  });
+
+  it('detects and flags geofence violation on capture', () => {
+    const violationEvents: Record<string, CRDTEventValue> = {
+      '2026-10-02T14:00:00.000Z-0000-dev1': {
+        t: 'CAPT',
+        sq: 'squad_alpha',
+        opr: 'op_alpha_1',
+        dat: {
+          o: 'bunker_01',
+          lat: 54.42, // ~1.1km away from bunker_01 (54.4095, 18.541)
+          lon: 18.541,
+        },
+      },
+    };
+
+    const report = runAntiCheatAudit({
+      events: violationEvents,
+      roster: sampleRoster,
+      graph: sampleGraph,
+      currentTime: Date.parse('2026-10-02T14:01:00.000Z'),
+    });
+
+    expect(report.anomalies.some((a) => a.type === 'GEOFENCE_VIOLATION')).toBe(true);
+  });
+
+  it('detects and flags revoked operators submitting actions', () => {
+    const revokedRoster = revokeOperator(sampleRoster, 'op_alpha_1');
+
+    const events: Record<string, CRDTEventValue> = {
+      '2026-10-02T14:00:00.000Z-0000-dev1': {
+        t: 'CAPT',
+        sq: 'squad_alpha',
+        opr: 'op_alpha_1',
+        dat: { o: 'bunker_01' },
+      },
+    };
+
+    const report = runAntiCheatAudit({
+      events,
+      roster: revokedRoster,
+      currentTime: Date.parse('2026-10-02T14:01:00.000Z'),
+    });
+
+    expect(report.anomalies.some((a) => a.type === 'REVOKED_OPERATOR')).toBe(true);
+    expect(report.passed).toBe(false);
+  });
+});
+
 
