@@ -1,0 +1,70 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: gridcommand-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    networks:
+      - tactical-mesh
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend-ingress:
+    build:
+      context: ./services/backend-ingress
+      dockerfile: Dockerfile
+    container_name: gridcommand-backend-ingress
+    restart: unless-stopped
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - MATCH_ID=GDANSK_ALPHA_2026
+      - PORT=8000
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - tactical-mesh
+    ports:
+      - "8000:8000"
+
+  dag-rule-engine:
+    build:
+      context: ./services/dag-rule-engine
+      dockerfile: Dockerfile
+    container_name: gridcommand-dag-rule-engine
+    restart: unless-stopped
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - MATCH_ID=GDANSK_ALPHA_2026
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - tactical-mesh
+
+  basecamp-web:
+    image: nginx:alpine
+    container_name: gridcommand-basecamp-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/nginx/basecamp.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./apps/mobile/dist:/usr/share/nginx/html/mobile:ro
+      - ./apps/gm-dashboard/dist:/usr/share/nginx/html/gm:ro
+    depends_on:
+      - backend-ingress
+    networks:
+      - tactical-mesh
+
+networks:
+  tactical-mesh:
+    driver: bridge
+
+volumes:
+  redis-data:

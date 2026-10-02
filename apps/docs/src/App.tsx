@@ -299,7 +299,7 @@ export const App: React.FC = () => {
               <div className="flex items-center justify-between pb-3 border-b border-[#1e2638] text-xs">
                 <div className="flex items-center gap-3">
                   <span className="text-[#00f3ff] font-black">GM CONSOLE // LIVE</span>
-                  <span className="text-[#8b949e]">MATCH: MAZOWSZE_ALPHA_2026</span>
+                  <span className="text-[#8b949e]">MATCH: GDANSK_ALPHA_2026</span>
                 </div>
                 <div className="flex items-center gap-3 font-bold">
                   <span className="text-[#0077ff]">ALPHA: 250 PTS</span>

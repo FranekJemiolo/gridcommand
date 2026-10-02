@@ -10,10 +10,10 @@ export interface TacticalHexMapProps {
 }
 
 const INITIAL_VIEW_STATE = {
-  longitude: 21.228,
-  latitude: 52.13,
-  zoom: 13.5,
-  pitch: 45,
+  longitude: 18.535,
+  latitude: 54.405,
+  zoom: 13.8,
+  pitch: 48,
   bearing: -15,
   maxPitch: 65,
 };

@@ -146,6 +146,25 @@ Or run individual applications:
 
 ---
 
+## 🌐 Live Interactive Demonstration
+
+Explore the live interactive architecture and Game Master DVR console hosted on GitHub Pages:
+**[https://franekjemiolo.github.io/gridcommand/](https://franekjemiolo.github.io/gridcommand/)**
+
+---
+
+## 🚢 Production Deployment & Field Hardware Setup
+
+Complete end-to-end production deployment instructions are documented in [docs/deployment.md](docs/deployment.md), covering:
+
+1. **Docker Compose Basecamp Server**: Running the full local-first Basecamp server stack (`redis`, `backend-ingress`, `dag-rule-engine`, and `nginx`) with captive portal redirection.
+2. **Field PWA Offline Installation**: Installing the Tactical Field Client directly onto Android/iOS devices without internet or app stores.
+3. **Standalone Android APK Generation**: Compiling and signing native release APKs via Capacitor (`pnpm cap:android` / `npx cap sync android`).
+4. **GL.iNet Tactical Router Setup**: Autonomous offline Wi-Fi bubble with DNS hijacking (`address=/#/192.168.8.1`) and mDNS discovery (`basecamp.local`).
+5. **Air-Gapped Sneakernet Disaster Recovery**: Physical USB-OTG/MicroSD state synchronization scripts (`./scripts/sneakernet-sync.sh`) during total electronic warfare / RF blackout.
+
+---
+
 ## 📄 License
 
 MIT © [Franek Jemiolo](https://github.com/FranekJemiolo)

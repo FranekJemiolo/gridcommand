@@ -57,7 +57,7 @@ export const TacticalMap: React.FC<TacticalMapProps> = ({
         ],
       },
       center: [playerLocation.lon, playerLocation.lat],
-      zoom: 15.5,
+      zoom: 15.2,
       pitch: rigPitch ? 45 : 0,
       bearing: playerHeading,
       attributionControl: false,

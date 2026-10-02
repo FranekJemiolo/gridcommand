@@ -71,8 +71,14 @@ Scaffold, configure, and implement the complete initial codebase for **GridComma
 - Integrated synchronized GPU-accelerated MapLibre OpenStreetMap basemap directly beneath the Deck.gl 3D hex columns in `apps/gm-dashboard`, with real-time camera synchronization across pitch, bearing, and zoom.
 - Enhanced raster paint brightness and saturation in `apps/mobile` (`TacticalMap.tsx`) so that streets, buildings, paths, contour terrain, and labels from OpenStreetMap are clearly and vividly visible in Rig Mode.
 - Added dynamic basemap mode toggles (`OSM Full` vs `OSM Tactical`) and official attribution.
-- Recaptured high-fidelity visual screenshots:
-  - `docs/assets/screenshots/mobile_hud.png`
-  - `docs/assets/screenshots/gm_dashboard.png`
-  - `docs/assets/screenshots/docs_landing.png`
-- Embedded updated visual interface captures into `README.md`.
+
+#### 7. Operational Realignment to Gdańsk & Full Production Hardening
+- Realigned operational simulation terrain coordinates to **Gdańsk, Poland** (Trójmiejski Park Krajobrazowy, Oliwa, Pachołek hill, and Dolina Radości: `54.4050°N, 18.5350°E`).
+- Synchronized mission node positions, objective pins, and 3D hexes across Mobile Field Client, GM Command Dashboard, and Documentation Portal.
+- Engineered production Basecamp Docker Compose stack (`docker-compose.yml`) orchestrating `redis`, `backend-ingress` (FastAPI + pycrdt), `dag-rule-engine` (NetworkX), and `basecamp-web` (production Nginx with captive portal and reverse proxy).
+- Added multi-stage Dockerfiles for Python microservices powered by Astral `uv`.
+- Added Progressive Web App (PWA) offline installation manifests (`manifest.json`), service worker (`sw.js`), and tactical vector SVG app icons.
+- Configured native Android APK compilation workflow with Ionic Capacitor (`pnpm cap:android`).
+- Added air-gapped Sneakernet disaster recovery shell script (`scripts/sneakernet-sync.sh`) with SHA-256 cryptographic verification manifests for electronic warfare / RF blackout scenarios.
+- Authored comprehensive production deployment guide (`docs/deployment.md`).
+- Recaptured clean visual screenshots without UI overlays and deployed to GitHub Pages.
