@@ -4,6 +4,7 @@ import {
   TacticalButton,
   StatusBadge,
   CompassBearing,
+  WearableSubHUDWidget,
 } from '@gridcommand/ui-theme';
 import { useGameStore } from './stores/gameStore';
 import { TacticalMap } from './components/TacticalMap';
@@ -12,7 +13,7 @@ import { ScannerModal } from './components/ScannerModal';
 import { SpotrepModal } from './components/SpotrepModal';
 import { ElevationProfileModal } from './components/ElevationProfileModal';
 import { OfflineSectorModal } from './components/OfflineSectorModal';
-import { latLonToMGRS, getDefaultRoster } from '@gridcommand/crdt-core';
+import { latLonToMGRS, getDefaultRoster, calculateTargetNavSolution } from '@gridcommand/crdt-core';
 
 export const App: React.FC = () => {
   const {
@@ -48,6 +49,7 @@ export const App: React.FC = () => {
   const [isSpotrepOpen, setIsSpotrepOpen] = useState(false);
   const [isElevationModalOpen, setIsElevationModalOpen] = useState(false);
   const [isOfflineModalOpen, setIsOfflineModalOpen] = useState(false);
+  const [isWearableModalOpen, setIsWearableModalOpen] = useState(false);
   const [isCoordMgrs, setIsCoordMgrs] = useState(true);
   const [copiedNotification, setCopiedNotification] = useState(false);
 
@@ -63,6 +65,18 @@ export const App: React.FC = () => {
     distanceMeters = Math.sqrt(dLat * dLat + dLon * dLon);
     targetBearing = ((Math.atan2(dLon, dLat) * 180) / Math.PI + 360) % 360;
   }
+
+  // Milestone 5: Target navigation solution for Wearable Sub-HUD
+  const navSolution =
+    activeNode && activeNode.lat && activeNode.lon
+      ? calculateTargetNavSolution(location.lat, location.lon, heading, activeNode.lat, activeNode.lon)
+      : {
+          targetBearingDegrees: 0,
+          relativeBearingDegrees: 0,
+          distanceMeters: Math.round(distanceMeters) || 142,
+          distanceFormatted: `${Math.round(distanceMeters) || 142}m`,
+          clockPosition: 12,
+        };
 
   // Simulate walking toward objective in Gdansk
   const simulateStepCloser = () => {
@@ -237,6 +251,12 @@ export const App: React.FC = () => {
                   className="text-[10px] text-[#f5b700] hover:text-[#e8ede8] border border-[#2e3d2e] px-2 py-1 rounded bg-[#0b0f0b] flex items-center gap-1 font-bold"
                 >
                   AUDIO: {audioEnabled ? 'ON 🔊' : 'MUTED 🔇'}
+                </button>
+                <button
+                  onClick={() => setIsWearableModalOpen(true)}
+                  className="text-[10px] text-[#38bdf8] hover:text-[#e8ede8] border border-[#38bdf8]/40 px-2 py-1 rounded bg-[#0b0f0b] flex items-center gap-1 font-bold"
+                >
+                  ⌚ WRIST HUD
                 </button>
                 <div className="text-[10px] text-[#9ba89b] hidden sm:block">
                   VOL UP: CONFIRM PIN
@@ -496,6 +516,45 @@ export const App: React.FC = () => {
         isOpen={isOfflineModalOpen}
         onClose={() => setIsOfflineModalOpen(false)}
       />
+
+      {/* Milestone 5: Wrist Wearable Companion Sub-HUD Modal */}
+      {isWearableModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-sm bg-[#141c14] border-2 border-[#38bdf8] rounded-xl shadow-2xl p-4 flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b border-[#2e3d2e] pb-2">
+              <span className="text-xs font-black text-[#38bdf8] uppercase tracking-wider">
+                TACTICAL WEARABLE WRIST COMPANION
+              </span>
+              <button
+                onClick={() => setIsWearableModalOpen(false)}
+                className="text-[#9ba89b] hover:text-white font-black px-2 py-0.5"
+              >
+                ✕
+              </button>
+            </div>
+
+            <WearableSubHUDWidget
+              targetName={activeNode?.name || 'Active Objective'}
+              targetCode={activeNode?.id.toUpperCase() || 'OBJ-1'}
+              distanceMeters={navSolution.distanceMeters}
+              relativeBearingDegrees={navSolution.relativeBearingDegrees}
+              clockPosition={navSolution.clockPosition}
+              objectiveStatus={activeNode?.status as any || 'ACTIVE'}
+              operatorCallsign="Viper-1"
+              squad="ALPHA"
+              onClaimObjective={(pin) => {
+                if (activeNode) captureObjective(activeNode.id, pin);
+              }}
+            />
+
+            <div className="flex justify-end pt-2 border-t border-[#2e3d2e]">
+              <TacticalButton size="compact" variant="olive" onClick={() => setIsWearableModalOpen(false)}>
+                DISMISS WEARABLE
+              </TacticalButton>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

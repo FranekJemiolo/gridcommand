@@ -10,4 +10,6 @@ export * from './squadRoster';
 export * from './missionManifest';
 export * from './aarEngine';
 export * from './antiCheatAudit';
+export * from './loraBridge';
+export * from './sensorFusion';
 

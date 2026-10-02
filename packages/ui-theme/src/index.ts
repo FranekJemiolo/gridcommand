@@ -5,4 +5,6 @@ export * from './components/CompassBearing';
 export * from './components/ElevationProfileWidget';
 export * from './components/MissionDAGEditorWidget';
 export * from './components/AARPlaybackWidget';
+export * from './components/WearableSubHUDWidget';
+export * from './components/LoraTransceiverWidget';
 export * from './audio/tacticalAudio';

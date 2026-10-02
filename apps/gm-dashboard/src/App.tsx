@@ -21,6 +21,7 @@ import {
   ElevationProfileWidget,
   MissionDAGEditorWidget,
   AARPlaybackWidget,
+  LoraTransceiverWidget,
   TacticalButton,
 } from '@gridcommand/ui-theme';
 import { generateKeyPair, toHexString } from '@gridcommand/crypto';
@@ -49,6 +50,7 @@ export const App: React.FC = () => {
   const [showLosModal, setShowLosModal] = useState<boolean>(false);
   const [showMissionBuilder, setShowMissionBuilder] = useState<boolean>(false);
   const [showAARModal, setShowAARModal] = useState<boolean>(false);
+  const [showLoraModal, setShowLoraModal] = useState<boolean>(false);
   const [roster, setRoster] = useState<OperatorRosterEntry[]>(getDefaultRoster());
 
   const aarReplay = useMemo(() => generateAARMissionReplay('MISSION_GDANSK_2026', 1800), []);
@@ -164,6 +166,12 @@ export const App: React.FC = () => {
             className="px-2.5 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#38bdf8] text-[#38bdf8] rounded text-[11px] font-bold flex items-center gap-1.5 transition-colors"
           >
             <span>⏱️ AAR &amp; AUDIT</span>
+          </button>
+          <button
+            onClick={() => setShowLoraModal(true)}
+            className="px-2.5 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#a855f7] text-[#c084fc] rounded text-[11px] font-bold flex items-center gap-1.5 transition-colors"
+          >
+            <span>📻 LORA BRIDGE</span>
           </button>
           <div className="flex items-center gap-1.5 px-3 py-1 bg-[#4e9b4e]/20 border border-[#4e9b4e] text-[#68d391] rounded">
             <span>ALPHA:</span>
@@ -386,6 +394,38 @@ export const App: React.FC = () => {
             <div className="flex justify-end pt-2 border-t border-[#2e3d2e]">
               <TacticalButton size="compact" variant="olive" onClick={() => setShowAARModal(false)}>
                 CLOSE AAR CONSOLE
+              </TacticalButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Milestone 5: Sub-GHz LoRa & Wearable Bridge Modal */}
+      {showLoraModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-5xl max-h-[92vh] overflow-y-auto bg-[#141c14] border-2 border-[#a855f7] rounded-lg shadow-2xl p-4 flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b border-[#2e3d2e] pb-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-[#a855f7] rounded-sm" />
+                <h3 className="text-sm font-black text-[#c084fc] uppercase tracking-wider">
+                  SUB-GHZ LORA TRANSCEIVER &amp; SENSOR FUSION BRIDGE
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowLoraModal(false)}
+                className="text-[#9ba89b] hover:text-white font-black px-2 py-0.5 rounded"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="w-full">
+              <LoraTransceiverWidget />
+            </div>
+
+            <div className="flex justify-end pt-2 border-t border-[#2e3d2e]">
+              <TacticalButton size="compact" variant="olive" onClick={() => setShowLoraModal(false)}>
+                CLOSE LORA CONSOLE
               </TacticalButton>
             </div>
           </div>

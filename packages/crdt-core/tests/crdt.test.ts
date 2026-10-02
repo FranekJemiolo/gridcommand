@@ -29,6 +29,20 @@ import {
 } from '../src/missionManifest';
 import { generateAARMissionReplay, sampleAARStateAtTime } from '../src/aarEngine';
 import { runAntiCheatAudit } from '../src/antiCheatAudit';
+import {
+  fragmentLoraPayload,
+  parseLoraChunk,
+  LoraPacketAssembler,
+  calculateLoraLinkMargin,
+  crc16Ccitt,
+} from '../src/loraBridge';
+import {
+  computeTiltCompensatedHeading,
+  calibrateMagnetometer,
+  calculateTargetNavSolution,
+  degreesToCardinal,
+  degreesToClockPosition,
+} from '../src/sensorFusion';
 import { generateKeyPair, toHexString } from '@gridcommand/crypto';
 
 describe('Hybrid Logical Clock (HLC)', () => {
@@ -844,6 +858,184 @@ describe('Milestone 4: Cryptographic Proof & Anti-Cheat Audit Engine', () => {
 
     expect(report.anomalies.some((a) => a.type === 'REVOKED_OPERATOR')).toBe(true);
     expect(report.passed).toBe(false);
+  });
+});
+
+describe('Milestone 5: LoRa / Meshtastic SX1262 Hardware Bridge', () => {
+  it('fragments and correctly reassembles payload with 237-byte MTU and CRC16', () => {
+    // 600-byte synthetic Base45 CRDT delta payload
+    const originalPayload = new Uint8Array(600);
+    for (let i = 0; i < 600; i++) {
+      originalPayload[i] = (i * 37 + 13) % 256;
+    }
+
+    const chunks = fragmentLoraPayload(originalPayload, 42);
+    // 600 bytes / 229 bytes max per chunk = 3 chunks
+    expect(chunks.length).toBe(3);
+
+    chunks.forEach((chunk, idx) => {
+      expect(chunk.rawBytes.length).toBeLessThanOrEqual(237);
+      expect(chunk.packetId).toBe(42);
+      expect(chunk.totalChunks).toBe(3);
+      expect(chunk.chunkIndex).toBe(idx);
+      expect(chunk.crc16).toBe(crc16Ccitt(chunk.data));
+
+      // Test parsing back
+      const parsed = parseLoraChunk(chunk.rawBytes);
+      expect(parsed.success).toBe(true);
+      expect(parsed.chunk?.chunkIndex).toBe(idx);
+    });
+
+    // Ingest out-of-order into assembler (chunk 2, then 0, then 1)
+    const assembler = new LoraPacketAssembler();
+    const r1 = assembler.ingestChunk(chunks[2]);
+    expect(r1.complete).toBe(false);
+
+    const r2 = assembler.ingestChunk(chunks[0]);
+    expect(r2.complete).toBe(false);
+
+    const r3 = assembler.ingestChunk(chunks[1]);
+    expect(r3.complete).toBe(true);
+    expect(r3.payload).toEqual(originalPayload);
+    expect(assembler.getActiveSessionCount()).toBe(0);
+  });
+
+  it('rejects corrupted frames with invalid CRC or corrupt magic', () => {
+    const originalPayload = new Uint8Array([10, 20, 30, 40, 50]);
+    const [chunk] = fragmentLoraPayload(originalPayload, 99);
+
+    // Corrupt one byte of data
+    const corrupted = new Uint8Array(chunk.rawBytes);
+    corrupted[9] ^= 0xff; // Invert bit in payload data
+
+    const parsed = parseLoraChunk(corrupted);
+    expect(parsed.success).toBe(false);
+    expect(parsed.error).toContain('CRC mismatch');
+
+    // Corrupt magic header
+    const badMagic = new Uint8Array(chunk.rawBytes);
+    badMagic[0] = 0x00;
+    const parsedMagic = parseLoraChunk(badMagic);
+    expect(parsedMagic.success).toBe(false);
+    expect(parsedMagic.error).toContain('Invalid LoRa frame magic');
+  });
+
+  it('models Sub-GHz RF link budget and wet canopy attenuation over 2.5km', () => {
+    const budget = calculateLoraLinkMargin({
+      distanceMeters: 2500,
+      frequencyMhz: 868.1,
+      txPowerDbm: 22,
+      spreadingFactor: 10,
+      bandwidthKhz: 125,
+      canopyDepthMeters: 150,
+      canopyLossDbPerMeter: 0.08,
+    });
+
+    // FSPL for 2.5km at 868MHz is ~99 dB
+    expect(budget.freeSpacePathLossDb).toBeGreaterThan(95);
+    expect(budget.freeSpacePathLossDb).toBeLessThan(105);
+    // Canopy attenuation: 150m * 0.08 dB/m = 12 dB
+    expect(budget.canopyLossDb).toBe(12);
+    // Viable link margin for SX1262 SF10 (-132 dBm sensitivity)
+    expect(budget.isLinkViable).toBe(true);
+    expect(budget.linkMarginDb).toBeGreaterThan(0);
+  });
+});
+
+describe('Milestone 5: Sensor-Fusion Rig Calibration & Digital Compass', () => {
+  it('computes tilt-compensated heading and corrects for regional magnetic declination', () => {
+    // Level device pointing magnetic East
+    const accelLevel = { x: 0, y: 0, z: 9.81 };
+    const magEast = { x: 0, y: -45, z: 20 };
+
+    const orientationLevel = computeTiltCompensatedHeading(accelLevel, magEast, undefined, 6.2);
+    expect(orientationLevel.pitchDegrees).toBeCloseTo(0, 0);
+    expect(orientationLevel.rollDegrees).toBeCloseTo(0, 0);
+    expect(orientationLevel.magneticHeadingDegrees).toBeCloseTo(90, 0);
+    expect(orientationLevel.trueHeadingDegrees).toBeCloseTo(96.2, 0);
+    expect(orientationLevel.cardinal).toBe('E');
+
+    // Device tilted 30 degrees pitch upwards
+    const pitchRad = (30 * Math.PI) / 180;
+    const accelTilted = {
+      x: -9.81 * Math.sin(pitchRad),
+      y: 0,
+      z: 9.81 * Math.cos(pitchRad),
+    };
+    // Magnetometer rotated in pitch
+    const magTilted = {
+      x: 35 * Math.cos(pitchRad),
+      y: 0,
+      z: -35 * Math.sin(pitchRad),
+    };
+
+    const orientationTilted = computeTiltCompensatedHeading(accelTilted, magTilted, undefined, 0);
+    expect(orientationTilted.pitchDegrees).toBeCloseTo(30, 0);
+    expect(orientationTilted.magneticHeadingDegrees).toBeCloseTo(0, 0); // Pointing North
+    expect(orientationTilted.cardinal).toBe('N');
+  });
+
+  it('calibrates magnetometer hard-iron bias and soft-iron scale from sweep samples', () => {
+    // Generate synthetic 3D sweep samples with hard-iron offset (+25, -15, +40)
+    const samples: Array<{ x: number; y: number; z: number }> = [];
+    const trueRadius = 50;
+    const offsetX = 25;
+    const offsetY = -15;
+    const offsetZ = 40;
+
+    for (let u = 0; u < 24; u++) {
+      const theta = (u / 24) * 2 * Math.PI;
+      for (let v = 0; v < 6; v++) {
+        const phi = ((v - 2.5) / 5) * Math.PI;
+        samples.push({
+          x: trueRadius * Math.cos(phi) * Math.cos(theta) + offsetX,
+          y: trueRadius * Math.cos(phi) * Math.sin(theta) + offsetY,
+          z: trueRadius * Math.sin(phi) + offsetZ,
+        });
+      }
+    }
+
+    const cal = calibrateMagnetometer(samples);
+    expect(cal.samplesCollected).toBe(samples.length);
+    expect(cal.isCalibrated).toBe(true);
+    expect(cal.calibrationQualityScore).toBeGreaterThanOrEqual(70);
+
+    // Hard-iron bias should accurately recover the injected offsets
+    expect(cal.bias.x).toBeCloseTo(offsetX, 1);
+    expect(cal.bias.y).toBeCloseTo(offsetY, 1);
+    expect(cal.bias.z).toBeCloseTo(offsetZ, 1);
+  });
+
+  it('calculates great-circle target navigation solution with relative bearing and clock direction', () => {
+    // Operator at Oliwa basecamp (54.4095, 18.541), heading due North (0°)
+    // Target at Radar HQ Trzy Szczyty (54.398, 18.519) - South-West (~215°)
+    const nav = calculateTargetNavSolution(54.4095, 18.541, 0, 54.398, 18.519);
+
+    expect(nav.distanceMeters).toBeGreaterThan(1800);
+    expect(nav.distanceMeters).toBeLessThan(2200);
+    expect(nav.distanceFormatted).toContain('km');
+    expect(nav.targetBearingDegrees).toBeGreaterThan(200);
+    expect(nav.targetBearingDegrees).toBeLessThan(235);
+    // When operator faces North, target at ~215° is at ~7 or 8 o'clock
+    expect(nav.clockPosition).toBeGreaterThanOrEqual(7);
+    expect(nav.clockPosition).toBeLessThanOrEqual(8);
+  });
+
+  it('converts degrees to NATO cardinals and military clock positions accurately', () => {
+    expect(degreesToCardinal(0)).toBe('N');
+    expect(degreesToCardinal(45)).toBe('NE');
+    expect(degreesToCardinal(90)).toBe('E');
+    expect(degreesToCardinal(135)).toBe('SE');
+    expect(degreesToCardinal(180)).toBe('S');
+    expect(degreesToCardinal(225)).toBe('SW');
+    expect(degreesToCardinal(270)).toBe('W');
+    expect(degreesToCardinal(315)).toBe('NW');
+
+    expect(degreesToClockPosition(0)).toBe(12);
+    expect(degreesToClockPosition(30)).toBe(1);
+    expect(degreesToClockPosition(90)).toBe(3);
+    expect(degreesToClockPosition(180)).toBe(6);
+    expect(degreesToClockPosition(270)).toBe(9);
   });
 });
 

@@ -22,6 +22,8 @@ import {
   ElevationProfileWidget,
   MissionDAGEditorWidget,
   AARPlaybackWidget,
+  LoraTransceiverWidget,
+  WearableSubHUDWidget,
 } from '@gridcommand/ui-theme';
 import {
   latLonToMGRS,
@@ -1000,32 +1002,53 @@ export const App: React.FC = () => {
               </div>
 
               {/* Milestone 5 */}
-              <div className="p-6 rounded-xl bg-[#141c14] border border-[#2e3d2e] space-y-4">
+              <div className="p-6 rounded-xl bg-[#141c14] border-2 border-[#4e9b4e] space-y-5">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-3">
-                    <span className="px-2.5 py-1 rounded bg-[#3b5323]/40 border border-[#4e9b4e] text-[#68d391] text-xs font-black">
+                    <span className="px-2.5 py-1 rounded bg-[#4e9b4e]/30 border border-[#4e9b4e] text-[#68d391] text-xs font-black">
                       MILESTONE 5
                     </span>
                     <h3 className="text-lg font-bold text-white">
                       Hardware LoRa Bridge &amp; Native Wearable Ecosystem
                     </h3>
                   </div>
-                  <span className="text-xs px-2.5 py-1 rounded bg-[#3b5323]/20 text-[#68d391] font-bold border border-[#4e9b4e]/50">
-                    RESEARCH &amp; LAB // STAGE 5
+                  <span className="text-xs px-2.5 py-1 rounded bg-[#4e9b4e]/20 text-[#68d391] font-bold border border-[#4e9b4e]">
+                    ✓ OPERATIONAL &amp; VERIFIED
                   </span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-2">
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs pt-1">
                   <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
-                    <div className="text-[#68d391] font-bold">LoRa SX1262 Web Serial &amp; BLE Bridge</div>
+                    <div className="text-[#f5b700] font-bold">LoRa SX1262 Web Serial &amp; BLE Bridge</div>
                     <p className="text-[#9ba89b] text-[11px] leading-relaxed">
-                      Direct connection to LilyGO T-Echo SX1262 transceivers, transparently fragmenting Base45 CRDT delta packets into 237-byte LoRa payloads for 2–5km deep canopy reach.
+                      Direct connection to LilyGO T-Echo SX1262 transceivers, transparently fragmenting Base45 CRDT delta packets into 237-byte LoRa payloads with CCITT CRC16 for 2–5km deep canopy reach.
                     </p>
                   </div>
                   <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
-                    <div className="text-[#68d391] font-bold">Wearable Companion Sub-HUD (WearOS / Apple Watch)</div>
+                    <div className="text-[#f5b700] font-bold">Wearable Companion Sub-HUD</div>
                     <p className="text-[#9ba89b] text-[11px] leading-relaxed">
-                      Lightweight wrist companion display for target bearing arrow, objective status, and instant glove-friendly PIN acknowledgment.
+                      Lightweight wrist companion display (WearOS / Apple Watch / Garmin) with rotating target bearing needle, glanceable distance counter, and 1-tap glove PIN confirmation.
                     </p>
+                  </div>
+                  <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
+                    <div className="text-[#f5b700] font-bold">Sensor-Fusion Rig Calibration</div>
+                    <p className="text-[#9ba89b] text-[11px] leading-relaxed">
+                      Trigonometric tilt-compensated digital compass, automated figure-8 magnetometer calibration routine, and Baltic regional magnetic declination adjustment.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Milestone 5 Live Interactive Laboratory */}
+                <div className="pt-4 border-t border-[#2e3d2e] space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-2.5 h-2.5 bg-[#68d391] rounded-sm" />
+                    <span className="text-xs font-black uppercase text-[#68d391] tracking-wider">
+                      MILESTONE 5 INTERACTIVE LORA TRANSCEIVER &amp; WEARABLE LABORATORY
+                    </span>
+                  </div>
+
+                  <div className="w-full">
+                    <LoraTransceiverWidget />
                   </div>
                 </div>
               </div>
