@@ -43,6 +43,7 @@ interface GMState {
   activeHazard: { name: string; remainingSeconds: number } | null;
 
   // Actions
+  setGraph: (graph: MissionGraph) => void;
   setIsLive: (live: boolean) => void;
   setScrubPosition: (pos: number) => void;
   toggleGlobalFreeze: () => void;
@@ -220,6 +221,7 @@ export const useGMStore = create<GMState>((set, get) => {
       },
     },
 
+    setGraph: (graph) => set({ graph }),
     setIsLive: (isLive) => set({ isLive }),
     setScrubPosition: (scrubPosition) => set({ scrubPosition }),
 

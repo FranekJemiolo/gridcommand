@@ -94,12 +94,12 @@ interface GameState {
   location: { lat: number; lon: number };
   activeObjectiveId: string;
   isBreached: boolean;
-  activeTab: 'hud' | 'mesh' | 'objectives' | 'diagnostics';
+  activeTab: 'hud' | 'mesh' | 'objectives' | 'roster' | 'diagnostics';
   meshNeighbors: MeshNeighbor[];
   totalUpdatesTransferred: number;
 
   // Actions
-  setActiveTab: (tab: 'hud' | 'mesh' | 'objectives' | 'diagnostics') => void;
+  setActiveTab: (tab: 'hud' | 'mesh' | 'objectives' | 'roster' | 'diagnostics') => void;
   toggleRedMode: () => void;
   toggleRainLock: () => void;
   toggleRigPitch: () => void;

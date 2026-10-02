@@ -6,6 +6,28 @@ import { MissionGraph, CRDTEventValue } from '../src/types';
 import { latLonToMGRS, latLonToUTM } from '../src/mgrs';
 import { computeElevationProfile, getTerrainElevation } from '../src/elevationProfile';
 import { OfflineMapStorageManager } from '../src/offlineMapManager';
+import {
+  validateMissionDAG,
+  removeMissionObjective,
+  addDependency,
+  isPointInGeofence,
+} from '../src/missionBuilder';
+import {
+  createOperator,
+  revokeOperator,
+  reinstateOperator,
+  findOperatorByPublicKey,
+  getDefaultRoster,
+} from '../src/squadRoster';
+import {
+  createSignedMissionManifest,
+  verifyMissionManifest,
+  exportManifestToBase45,
+  importManifestFromBase45,
+  exportManifestToJSON,
+  importManifestFromJSON,
+} from '../src/missionManifest';
+import { generateKeyPair, toHexString } from '@gridcommand/crypto';
 
 describe('Hybrid Logical Clock (HLC)', () => {
   it('generates monotonic timestamps with device fingerprint', () => {
@@ -332,3 +354,308 @@ describe('Offline Map Pack Storage Manager', () => {
     expect(OfflineMapStorageManager.isSectorCached('katowice_forest_grid')).toBe(false);
   });
 });
+
+describe('Milestone 3: Dynamic Mission Builder & DAG Engine', () => {
+  it('validates a valid acyclic mission graph and identifies topological order and roots', () => {
+    const validGraph: MissionGraph = {
+      nodes: {
+        obj_alpha: {
+          id: 'obj_alpha',
+          name: 'Dropzone Alpha',
+          prerequisites: [],
+          status: 'ACTIVE',
+          owner: null,
+          points: 100,
+          decayRatePerMin: 0,
+        },
+        obj_bravo: {
+          id: 'obj_bravo',
+          name: 'Comms Relay',
+          prerequisites: ['obj_alpha'],
+          status: 'LOCKED',
+          owner: null,
+          points: 200,
+          decayRatePerMin: 0,
+        },
+        obj_charlie: {
+          id: 'obj_charlie',
+          name: 'Extraction Point',
+          prerequisites: ['obj_bravo'],
+          status: 'LOCKED',
+          owner: null,
+          points: 500,
+          decayRatePerMin: 0,
+        },
+      },
+    };
+
+    const res = validateMissionDAG(validGraph);
+    expect(res.valid).toBe(true);
+    expect(res.errors.length).toBe(0);
+    expect(res.rootNodes).toEqual(['obj_alpha']);
+    expect(res.topologicalOrder).toEqual(['obj_alpha', 'obj_bravo', 'obj_charlie']);
+  });
+
+  it('detects cycles and returns an invalid validation result', () => {
+    const cyclicGraph: MissionGraph = {
+      nodes: {
+        node_1: {
+          id: 'node_1',
+          name: 'Node 1',
+          prerequisites: ['node_3'],
+          status: 'ACTIVE',
+          owner: null,
+          points: 100,
+          decayRatePerMin: 0,
+        },
+        node_2: {
+          id: 'node_2',
+          name: 'Node 2',
+          prerequisites: ['node_1'],
+          status: 'LOCKED',
+          owner: null,
+          points: 100,
+          decayRatePerMin: 0,
+        },
+        node_3: {
+          id: 'node_3',
+          name: 'Node 3',
+          prerequisites: ['node_2'],
+          status: 'LOCKED',
+          owner: null,
+          points: 100,
+          decayRatePerMin: 0,
+        },
+      },
+    };
+
+    const res = validateMissionDAG(cyclicGraph);
+    expect(res.valid).toBe(false);
+    expect(res.errors.some((e) => e.includes('Circular dependency'))).toBe(true);
+  });
+
+  it('detects missing prerequisites and self-loops', () => {
+    const invalidGraph: MissionGraph = {
+      nodes: {
+        self_loop: {
+          id: 'self_loop',
+          name: 'Self Dependent Node',
+          prerequisites: ['self_loop', 'non_existent_node'],
+          status: 'ACTIVE',
+          owner: null,
+          points: 50,
+          decayRatePerMin: 0,
+        },
+      },
+    };
+
+    const res = validateMissionDAG(invalidGraph);
+    expect(res.valid).toBe(false);
+    expect(res.errors.some((e) => e.includes('cannot depend on itself'))).toBe(true);
+    expect(res.errors.some((e) => e.includes('non-existent prerequisite'))).toBe(true);
+  });
+
+  it('adds and removes objectives and cleans up cascading prerequisites', () => {
+    let graph: MissionGraph = {
+      nodes: {
+        root: {
+          id: 'root',
+          name: 'Root',
+          prerequisites: [],
+          status: 'ACTIVE',
+          owner: null,
+          points: 50,
+          decayRatePerMin: 0,
+        },
+        sub: {
+          id: 'sub',
+          name: 'Sub Objective',
+          prerequisites: ['root'],
+          status: 'LOCKED',
+          owner: null,
+          points: 100,
+          decayRatePerMin: 0,
+        },
+      },
+    };
+
+    // Remove root objective
+    graph = removeMissionObjective(graph, 'root');
+    expect(graph.nodes['root']).toBeUndefined();
+    // Sub objective's prerequisites should be cleaned up
+    expect(graph.nodes['sub'].prerequisites).toEqual([]);
+  });
+
+  it('prevents adding dependencies that would introduce a cycle', () => {
+    const graph: MissionGraph = {
+      nodes: {
+        a: { id: 'a', name: 'A', prerequisites: [], status: 'ACTIVE', owner: null, points: 10, decayRatePerMin: 0 },
+        b: { id: 'b', name: 'B', prerequisites: ['a'], status: 'LOCKED', owner: null, points: 10, decayRatePerMin: 0 },
+      },
+    };
+
+    // Attempt to make A depend on B (A -> B -> A cycle)
+    const result = addDependency(graph, 'b', 'a');
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Circular dependency');
+  });
+
+  it('computes geofence proximity correctly', () => {
+    // Pachołek Hill
+    const objLat = 54.4095;
+    const objLon = 18.541;
+
+    // Operator 20 meters away
+    const nearLat = 54.4096;
+    const nearLon = 18.5411;
+    const nearCheck = isPointInGeofence(nearLat, nearLon, objLat, objLon, 50);
+    expect(nearCheck.inGeofence).toBe(true);
+    expect(nearCheck.distanceMeters).toBeLessThan(50);
+
+    // Operator 2 kilometers away
+    const farLat = 54.39;
+    const farLon = 18.52;
+    const farCheck = isPointInGeofence(farLat, farLon, objLat, objLon, 50);
+    expect(farCheck.inGeofence).toBe(false);
+    expect(farCheck.distanceMeters).toBeGreaterThan(1000);
+  });
+});
+
+describe('Milestone 3: Squad Roster & Cryptographic Keypair Registry', () => {
+  it('creates operators with auto-generated Ed25519 keypairs', () => {
+    const { operator, generatedPrivateKeyHex } = createOperator({
+      callsign: 'Apex-1',
+      squad: 'squad_alpha',
+      role: 'LEADER',
+    });
+
+    expect(operator.callsign).toBe('Apex-1');
+    expect(operator.squad).toBe('squad_alpha');
+    expect(operator.role).toBe('LEADER');
+    expect(operator.publicKey.length).toBe(64);
+    expect(generatedPrivateKeyHex).toBeDefined();
+    expect(generatedPrivateKeyHex?.length).toBe(64);
+    expect(operator.revoked).toBe(false);
+  });
+
+  it('revokes and reinstates operators in the roster', () => {
+    const { operator } = createOperator({
+      callsign: 'Scout-Bravo',
+      squad: 'squad_bravo',
+      role: 'POINTMAN',
+    });
+
+    let roster = [operator];
+    expect(findOperatorByPublicKey(roster, operator.publicKey)).toBeDefined();
+
+    roster = revokeOperator(roster, operator.id);
+    expect(roster[0].revoked).toBe(true);
+    expect(findOperatorByPublicKey(roster, operator.publicKey)).toBeUndefined();
+
+    roster = reinstateOperator(roster, operator.id);
+    expect(roster[0].revoked).toBe(false);
+    expect(findOperatorByPublicKey(roster, operator.publicKey)).toBeDefined();
+  });
+});
+
+describe('Milestone 3: Signed Mission Manifest & Air-Gapped Base45 QR Exchange', () => {
+  it('creates, signs, and verifies a canonical mission manifest', () => {
+    const { privateKey, publicKey } = generateKeyPair();
+    const pubKeyHex = toHexString(publicKey);
+
+    const manifest = createSignedMissionManifest(
+      {
+        missionId: 'OPERATION_BALTIC_SHIELD_2026',
+        title: 'Operation Baltic Shield',
+        description: 'Simulated urban and forest tactical encounter in Gdańsk Oliwa sector.',
+        authorPublicKey: pubKeyHex,
+        graph: {
+          nodes: {
+            hq: {
+              id: 'hq',
+              name: 'HQ Outpost',
+              prerequisites: [],
+              status: 'ACTIVE',
+              owner: null,
+              points: 100,
+              decayRatePerMin: 0,
+            },
+          },
+        },
+        roster: getDefaultRoster(),
+      },
+      privateKey
+    );
+
+    expect(manifest.signature).toBeDefined();
+    expect(manifest.signature?.length).toBe(128); // 64-byte Ed25519 signature = 128 hex chars
+
+    const verification = verifyMissionManifest(manifest);
+    expect(verification.valid).toBe(true);
+
+    // Test tampering detection
+    const tampered = { ...manifest, title: 'Tampered Title' };
+    const tamperedVerification = verifyMissionManifest(tampered);
+    expect(tamperedVerification.valid).toBe(false);
+    expect(tamperedVerification.reason).toContain('mismatch or tampered');
+  });
+
+  it('exports and imports manifests via Base45 QR encoding roundtrip', () => {
+    const { privateKey, publicKey } = generateKeyPair();
+    const manifest = createSignedMissionManifest(
+      {
+        missionId: 'AIRGAP_MISSION_TEST',
+        title: 'Air-Gapped Exercise',
+        description: 'Testing Base45 encoding across physical barriers.',
+        authorPublicKey: toHexString(publicKey),
+        graph: {
+          nodes: {
+            zone_a: {
+              id: 'zone_a',
+              name: 'Zone A',
+              prerequisites: [],
+              status: 'ACTIVE',
+              owner: null,
+              points: 50,
+              decayRatePerMin: 0,
+            },
+          },
+        },
+        roster: [],
+      },
+      privateKey
+    );
+
+    const base45Str = exportManifestToBase45(manifest);
+    expect(typeof base45Str).toBe('string');
+    expect(base45Str.length).toBeGreaterThan(50);
+
+    const importResult = importManifestFromBase45(base45Str);
+    expect(importResult.valid).toBe(true);
+    expect(importResult.manifest?.missionId).toBe('AIRGAP_MISSION_TEST');
+    expect(importResult.manifest?.signature).toBe(manifest.signature);
+  });
+
+  it('exports and imports manifests via JSON roundtrip', () => {
+    const { privateKey, publicKey } = generateKeyPair();
+    const manifest = createSignedMissionManifest(
+      {
+        missionId: 'JSON_MISSION_TEST',
+        title: 'JSON Exercise',
+        description: 'Standard JSON manifest import/export.',
+        authorPublicKey: toHexString(publicKey),
+        graph: {
+          nodes: {},
+        },
+        roster: [],
+      },
+      privateKey
+    );
+
+    const json = exportManifestToJSON(manifest);
+    const result = importManifestFromJSON(json);
+    expect(result.valid).toBe(true);
+    expect(result.manifest?.missionId).toBe('JSON_MISSION_TEST');
+  });
+});
+

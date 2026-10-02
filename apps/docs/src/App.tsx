@@ -14,8 +14,25 @@ import {
   Github,
   BookOpen,
 } from 'lucide-react';
-import { TacticalButton, StatusBadge, CompassBearing, TacticalAudioEngine, ElevationProfileWidget } from '@gridcommand/ui-theme';
-import { latLonToMGRS, computeElevationProfile } from '@gridcommand/crdt-core';
+import {
+  TacticalButton,
+  StatusBadge,
+  CompassBearing,
+  TacticalAudioEngine,
+  ElevationProfileWidget,
+  MissionDAGEditorWidget,
+} from '@gridcommand/ui-theme';
+import {
+  latLonToMGRS,
+  computeElevationProfile,
+  getDefaultRoster,
+  addDependency,
+  removeDependency,
+  revokeOperator,
+  reinstateOperator,
+  MissionGraph,
+  OperatorRosterEntry,
+} from '@gridcommand/crdt-core';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'mobile-hud' | 'gm-center' | 'mesh-sim' | 'bom' | 'roadmap'>('overview');
@@ -23,6 +40,48 @@ export const App: React.FC = () => {
   const [demoRainLock, setDemoRainLock] = useState(false);
   const [demoCaptured, setDemoCaptured] = useState(false);
   const [audioFeedbackText, setAudioFeedbackText] = useState<string | null>(null);
+
+  // Milestone 3 Interactive Demo State
+  const [docsGraph, setDocsGraph] = useState<MissionGraph>({
+    nodes: {
+      bunker_01: {
+        id: 'bunker_01',
+        name: 'Bunker Pachołek (01)',
+        prerequisites: [],
+        status: 'ACTIVE',
+        owner: null,
+        points: 100,
+        decayRatePerMin: 0,
+        geofenceRadiusMeters: 45,
+        captureMechanism: 'INSTANT_NFC',
+      },
+      bunker_02: {
+        id: 'bunker_02',
+        name: 'Redoubt Dolina Radości (02)',
+        prerequisites: ['bunker_01'],
+        status: 'LOCKED',
+        owner: null,
+        points: 250,
+        decayRatePerMin: 0,
+        geofenceRadiusMeters: 60,
+        captureMechanism: 'TIMED_HOLD',
+        holdDurationSeconds: 180,
+      },
+      radar_hq: {
+        id: 'radar_hq',
+        name: 'Radar HQ Trzy Szczyty',
+        prerequisites: ['bunker_02'],
+        status: 'LOCKED',
+        owner: null,
+        points: 500,
+        decayRatePerMin: 0,
+        geofenceRadiusMeters: 100,
+        captureMechanism: 'SYNC_CAPTURE',
+        requiredOperators: 2,
+      },
+    },
+  });
+  const [docsRoster, setDocsRoster] = useState<OperatorRosterEntry[]>(getDefaultRoster());
 
   // Milestone 2 Interactive Demo State
   const [mgrsLat, setMgrsLat] = useState(54.4095);
@@ -815,38 +874,71 @@ export const App: React.FC = () => {
               </div>
 
               {/* Milestone 3 */}
-              <div className="p-6 rounded-xl bg-[#141c14] border border-[#2e3d2e] space-y-4">
+              <div className="p-6 rounded-xl bg-[#141c14] border-2 border-[#4e9b4e] space-y-5">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-3">
-                    <span className="px-2.5 py-1 rounded bg-[#c7a76c]/20 border border-[#c7a76c] text-[#c7a76c] text-xs font-black">
+                    <span className="px-2.5 py-1 rounded bg-[#4e9b4e]/30 border border-[#4e9b4e] text-[#68d391] text-xs font-black">
                       MILESTONE 3
                     </span>
                     <h3 className="text-lg font-bold text-white">
                       Dynamic Mission Builder &amp; Graph Editor
                     </h3>
                   </div>
-                  <span className="text-xs px-2.5 py-1 rounded bg-[#c7a76c]/10 text-[#c7a76c] font-bold border border-[#c7a76c]/40">
-                    SCHEDULED // STAGE 3
+                  <span className="text-xs px-2.5 py-1 rounded bg-[#4e9b4e]/20 text-[#68d391] font-bold border border-[#4e9b4e]">
+                    ✓ OPERATIONAL &amp; VERIFIED
                   </span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs pt-2">
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs pt-1">
                   <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
-                    <div className="text-[#d4a373] font-bold">Visual DAG Mission Graph Editor</div>
+                    <div className="text-[#f5b700] font-bold">Visual DAG Mission Graph Editor</div>
                     <p className="text-[#9ba89b] text-[11px] leading-relaxed">
-                      GM map-based objective creator with geofence radii, hold-timer triggers, and drag-and-drop prerequisite dependency trees.
+                      Map-based objective creator with geofences (10m–500m), configurable capture mechanics (Instant NFC, Timed Hold 180s, Synchronized 2x Capture), and cycle detection.
                     </p>
                   </div>
                   <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
-                    <div className="text-[#d4a373] font-bold">Squad Roster &amp; Keypair Approval</div>
+                    <div className="text-[#f5b700] font-bold">Squad Roster &amp; Keypair Approval</div>
                     <p className="text-[#9ba89b] text-[11px] leading-relaxed">
-                      Operational roster management, callsign assignment, specialist roles (Medic, RTO, Marksman), and Ed25519 public key registries.
+                      Operational roster management, callsign assignment, specialist roles (Leader, Pointman, Medic, RTO, Marksman), and Ed25519 public key registries with revocation.
                     </p>
                   </div>
                   <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
-                    <div className="text-[#d4a373] font-bold">Signed Mission Package Export</div>
+                    <div className="text-[#f5b700] font-bold">Signed Mission Package Export</div>
                     <p className="text-[#9ba89b] text-[11px] leading-relaxed">
-                      Air-gapped mission manifest distribution via Base45 high-density QR code scanning or USB OTG flash drive loading.
+                      Air-gapped mission distribution via Base45 high-density QR code encoding or canonical JSON signed manifests verified with Ed25519 cryptography.
                     </p>
+                  </div>
+                </div>
+
+                {/* Milestone 3 Live Interactive Laboratory */}
+                <div className="pt-4 border-t border-[#2e3d2e] space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-2.5 h-2.5 bg-[#68d391] rounded-sm" />
+                    <span className="text-xs font-black uppercase text-[#68d391] tracking-wider">
+                      MILESTONE 3 INTERACTIVE DAG MISSION BUILDER LABORATORY
+                    </span>
+                  </div>
+
+                  <div className="w-full">
+                    <MissionDAGEditorWidget
+                      nodes={docsGraph.nodes as any}
+                      roster={docsRoster as any}
+                      onAddDependency={(p, c) => {
+                        const res = addDependency(docsGraph, p, c);
+                        if (res.success) setDocsGraph(res.graph);
+                      }}
+                      onRemoveDependency={(p, c) => {
+                        const res = removeDependency(docsGraph, p, c);
+                        setDocsGraph(res);
+                      }}
+                      onToggleRevokeOperator={(id) => {
+                        const target = docsRoster.find((r) => r.id === id);
+                        if (!target) return;
+                        setDocsRoster(
+                          target.revoked ? reinstateOperator(docsRoster, id) : revokeOperator(docsRoster, id)
+                        );
+                      }}
+                    />
                   </div>
                 </div>
               </div>

@@ -18,6 +18,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@gridcommand/crypto": "workspace:*",
     "yjs": "^13.6.18"
   },
   "devDependencies": {

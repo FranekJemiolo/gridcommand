@@ -4,6 +4,8 @@
 
 export type NodeStatus = 'HIDDEN' | 'LOCKED' | 'ACTIVE' | 'RESOLVED';
 
+export type CaptureMechanism = 'INSTANT_NFC' | 'TIMED_HOLD' | 'SYNC_CAPTURE';
+
 export interface MissionNode {
   id: string;
   name: string;
@@ -16,10 +18,36 @@ export interface MissionNode {
   lat?: number;
   lon?: number;
   pin?: string;
+  geofenceRadiusMeters?: number; // 10m to 500m geofence perimeter
+  captureMechanism?: CaptureMechanism;
+  holdDurationSeconds?: number; // Duration required for TIMED_HOLD (e.g. 180s)
+  requiredOperators?: number; // Number of simultaneous operators for SYNC_CAPTURE
 }
 
 export interface MissionGraph {
   nodes: Record<string, MissionNode>;
+}
+
+export interface OperatorRosterEntry {
+  id: string;
+  callsign: string;
+  squad: 'squad_alpha' | 'squad_bravo';
+  role: BlueForceRole;
+  publicKey: string; // Ed25519 hex public key
+  revoked: boolean;
+  assignedAt: number;
+}
+
+export interface MissionManifest {
+  manifestVersion: '1.0';
+  missionId: string;
+  title: string;
+  description: string;
+  createdAt: number;
+  authorPublicKey: string;
+  graph: MissionGraph;
+  roster: OperatorRosterEntry[];
+  signature?: string; // Ed25519 signature of canonical JSON
 }
 
 export type EventType = 'CAPT' | 'OVER' | 'HAZ' | 'SOS' | 'MULE' | 'FREEZE' | 'SPOTREP' | 'BFT';

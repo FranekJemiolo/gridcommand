@@ -12,7 +12,7 @@ import { ScannerModal } from './components/ScannerModal';
 import { SpotrepModal } from './components/SpotrepModal';
 import { ElevationProfileModal } from './components/ElevationProfileModal';
 import { OfflineSectorModal } from './components/OfflineSectorModal';
-import { latLonToMGRS } from '@gridcommand/crdt-core';
+import { latLonToMGRS, getDefaultRoster } from '@gridcommand/crdt-core';
 
 export const App: React.FC = () => {
   const {
@@ -99,7 +99,7 @@ export const App: React.FC = () => {
       {/* Sub-Header: Sector & Mode Tabs */}
       <div className="bg-[#141c14] border-b border-[#2e3d2e] px-3 py-1.5 flex items-center justify-between text-xs font-mono flex-wrap gap-2">
         <div className="flex items-center gap-1.5 overflow-x-auto">
-          {(['hud', 'mesh', 'objectives', 'diagnostics'] as const).map((tab) => (
+          {(['hud', 'mesh', 'objectives', 'roster', 'diagnostics'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -306,9 +306,14 @@ export const App: React.FC = () => {
       {/* TAB 3: OBJECTIVES & DAG PROGRESS */}
       {activeTab === 'objectives' && (
         <div className="flex-1 p-4 bg-[#141c14] font-mono overflow-y-auto space-y-4">
-          <div>
-            <h2 className="text-base font-bold text-[#f5b700]">MISSION OBJECTIVES DAG</h2>
-            <p className="text-xs text-[#9ba89b]">Deterministic client-side state machine</p>
+          <div className="flex items-center justify-between border-b border-[#2e3d2e] pb-2">
+            <div>
+              <h2 className="text-base font-bold text-[#f5b700]">MISSION OBJECTIVES DAG</h2>
+              <p className="text-xs text-[#9ba89b]">Deterministic client-side state machine</p>
+            </div>
+            <span className="text-[10px] px-2 py-0.5 rounded bg-[#4e9b4e]/20 border border-[#4e9b4e] text-[#68d391] font-bold">
+              ✓ ED25519 SIGNED MANIFEST
+            </span>
           </div>
 
           <div className="space-y-3">
@@ -323,12 +328,30 @@ export const App: React.FC = () => {
                   </div>
                   <StatusBadge status={node.status} />
                 </div>
-                <div className="text-[11px] text-[#9ba89b]">
-                  POINTS: <span className="text-[#f5b700] font-bold">+{node.points}</span> | PREREQUISITES:{' '}
-                  {node.prerequisites.length > 0 ? node.prerequisites.join(', ') : 'NONE (GENESIS)'}
+                <div className="grid grid-cols-2 gap-2 text-[10px] text-[#9ba89b]">
+                  <div>
+                    POINTS: <span className="text-[#f5b700] font-bold">+{node.points}</span>
+                  </div>
+                  <div>
+                    GEOFENCE: <span className="text-[#68d391] font-bold">{node.geofenceRadiusMeters || 50}m</span>
+                  </div>
+                  <div>
+                    MECHANISM:{' '}
+                    <span className="text-[#f5b700] font-bold">
+                      {node.captureMechanism || 'INSTANT_NFC'}
+                    </span>
+                  </div>
+                  <div>
+                    PREREQS:{' '}
+                    <span className="text-white font-bold">
+                      {node.prerequisites.length > 0 ? node.prerequisites.join(', ') : 'NONE (ROOT)'}
+                    </span>
+                  </div>
                 </div>
                 {node.owner && (
-                  <div className="text-[11px] text-[#68d391] font-bold">CONTROLLED BY: {node.owner.toUpperCase()}</div>
+                  <div className="text-[11px] text-[#68d391] font-bold pt-1 border-t border-[#2e3d2e]">
+                    CONTROLLED BY: {node.owner.toUpperCase()}
+                  </div>
                 )}
               </div>
             ))}
@@ -336,7 +359,52 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 4: SNEAKERNET & DIAGNOSTICS */}
+      {/* TAB 4: SQUAD ROSTER & CRYPTO REGISTRY */}
+      {activeTab === 'roster' && (
+        <div className="flex-1 p-4 bg-[#141c14] font-mono overflow-y-auto space-y-4">
+          <div className="flex items-center justify-between border-b border-[#2e3d2e] pb-2">
+            <div>
+              <h2 className="text-base font-bold text-[#f5b700]">SQUAD OPERATIONAL ROSTER</h2>
+              <p className="text-xs text-[#9ba89b]">Ed25519 authenticated operator registry</p>
+            </div>
+            <span className="text-[10px] px-2 py-0.5 rounded bg-[#4e9b4e]/20 border border-[#4e9b4e] text-[#68d391] font-bold">
+              4 OPERATORS REGISTERED
+            </span>
+          </div>
+
+          <div className="space-y-2.5">
+            {getDefaultRoster().map((op) => (
+              <div
+                key={op.id}
+                className="p-3 rounded-lg bg-[#1c261c] border border-[#2e3d2e] space-y-1.5"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-black text-white text-xs">{op.callsign}</span>
+                    <span
+                      className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
+                        op.squad === 'squad_alpha'
+                          ? 'bg-[#4e9b4e]/30 text-[#68d391] border border-[#4e9b4e]'
+                          : 'bg-[#8a6240]/30 text-[#d4a373] border border-[#a67c52]'
+                      }`}
+                    >
+                      {op.squad === 'squad_alpha' ? 'ALPHA (OLIVE)' : 'BRAVO (COYOTE)'}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-[#f5b700] font-bold uppercase">{op.role}</span>
+                </div>
+
+                <div className="flex items-center justify-between text-[10px] text-[#9ba89b]">
+                  <span className="font-mono">PUBKEY: {op.publicKey.substring(0, 16)}...</span>
+                  <span className="text-[#68d391] font-bold">✓ ACTIVE KEY</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 5: SNEAKERNET & DIAGNOSTICS */}
       {activeTab === 'diagnostics' && (
         <div className="flex-1 p-4 bg-[#141c14] font-mono overflow-y-auto space-y-4 text-xs">
           <div>

@@ -4,8 +4,24 @@ import { TacticalHexMap } from './components/TacticalHexMap';
 import { TemporalScrubber } from './components/TemporalScrubber';
 import { EventTicker } from './components/EventTicker';
 import { AdminConsole } from './components/AdminConsole';
-import { latLonToMGRS, computeElevationProfile } from '@gridcommand/crdt-core';
-import { ElevationProfileWidget, TacticalButton } from '@gridcommand/ui-theme';
+import {
+  latLonToMGRS,
+  computeElevationProfile,
+  getDefaultRoster,
+  addDependency,
+  removeDependency,
+  revokeOperator,
+  reinstateOperator,
+  createSignedMissionManifest,
+  exportManifestToJSON,
+  OperatorRosterEntry,
+} from '@gridcommand/crdt-core';
+import {
+  ElevationProfileWidget,
+  MissionDAGEditorWidget,
+  TacticalButton,
+} from '@gridcommand/ui-theme';
+import { generateKeyPair, toHexString } from '@gridcommand/crypto';
 
 export const App: React.FC = () => {
   const {
@@ -19,6 +35,7 @@ export const App: React.FC = () => {
     markers,
     ticker,
     activeHazard,
+    setGraph,
     setIsLive,
     setScrubPosition,
     toggleGlobalFreeze,
@@ -28,11 +45,59 @@ export const App: React.FC = () => {
 
   const [selectedHex, setSelectedHex] = useState<TacticalHex | null>(null);
   const [showLosModal, setShowLosModal] = useState<boolean>(false);
+  const [showMissionBuilder, setShowMissionBuilder] = useState<boolean>(false);
+  const [roster, setRoster] = useState<OperatorRosterEntry[]>(getDefaultRoster());
 
   // Default GM Basecamp coordinates in Oliwa
   const basecampLat = 54.4095;
   const basecampLon = 18.541;
   const basecampMGRS = latLonToMGRS(basecampLat, basecampLon).formatted;
+
+  const handleAddDependency = (parentId: string, childId: string) => {
+    const result = addDependency(graph, parentId, childId);
+    if (result.success) {
+      setGraph(result.graph);
+    } else {
+      alert(`Dependency error: ${result.error}`);
+    }
+  };
+
+  const handleRemoveDependency = (parentId: string, childId: string) => {
+    const nextGraph = removeDependency(graph, parentId, childId);
+    setGraph(nextGraph);
+  };
+
+  const handleToggleRevokeOperator = (operatorId: string) => {
+    const target = roster.find((o) => o.id === operatorId);
+    if (!target) return;
+    const nextRoster = target.revoked
+      ? reinstateOperator(roster, operatorId)
+      : revokeOperator(roster, operatorId);
+    setRoster(nextRoster);
+  };
+
+  const handleExportManifest = () => {
+    const { privateKey, publicKey } = generateKeyPair();
+    const manifest = createSignedMissionManifest(
+      {
+        missionId: `MISSION_${matchId}`,
+        title: 'Operation Baltic Shield 2026',
+        description: 'Tactical field simulation over Gdańsk Oliwa moraine hills.',
+        authorPublicKey: toHexString(publicKey),
+        graph,
+        roster,
+      },
+      privateKey
+    );
+    const jsonStr = exportManifestToJSON(manifest);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `manifest_${matchId.toLowerCase()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   // Calculate squad scores
   let alphaScore = 0;
@@ -75,8 +140,14 @@ export const App: React.FC = () => {
           </span>
         </div>
 
-        {/* Live Scoreboard & Quick LOS Button */}
+        {/* Live Scoreboard & Quick Tool Buttons */}
         <div className="flex items-center gap-3 text-xs font-black">
+          <button
+            onClick={() => setShowMissionBuilder(true)}
+            className="px-2.5 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#4e9b4e] text-[#68d391] rounded text-[11px] font-bold flex items-center gap-1.5 transition-colors"
+          >
+            <span>🛠️ MISSION BUILDER (DAG &amp; ROSTER)</span>
+          </button>
           <button
             onClick={() => setShowLosModal(true)}
             className="px-2.5 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#f5b700] text-[#f5b700] rounded text-[11px] font-bold flex items-center gap-1.5 transition-colors"
@@ -228,6 +299,45 @@ export const App: React.FC = () => {
             <div className="flex justify-end pt-2 border-t border-[#2e3d2e]">
               <TacticalButton size="compact" variant="yellow" onClick={() => setShowLosModal(false)}>
                 DISMISS ANALYZER
+              </TacticalButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dynamic Mission Builder (DAG & Roster) Modal */}
+      {showMissionBuilder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-[#141c14] border-2 border-[#4e9b4e] rounded-lg shadow-2xl p-4 flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b border-[#2e3d2e] pb-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-[#4e9b4e] rounded-sm" />
+                <h3 className="text-sm font-black text-[#68d391] uppercase tracking-wider">
+                  MISSION AUTHORING &amp; SQUAD ROSTER CONSOLE
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowMissionBuilder(false)}
+                className="text-[#9ba89b] hover:text-white font-black px-2 py-0.5 rounded"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="w-full">
+              <MissionDAGEditorWidget
+                nodes={graph.nodes as any}
+                roster={roster as any}
+                onAddDependency={handleAddDependency}
+                onRemoveDependency={handleRemoveDependency}
+                onToggleRevokeOperator={handleToggleRevokeOperator}
+                onExportManifest={handleExportManifest}
+              />
+            </div>
+
+            <div className="flex justify-end pt-2 border-t border-[#2e3d2e]">
+              <TacticalButton size="compact" variant="olive" onClick={() => setShowMissionBuilder(false)}>
+                CLOSE MISSION BUILDER
               </TacticalButton>
             </div>
           </div>
