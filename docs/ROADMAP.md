@@ -139,3 +139,26 @@ Milestones are prioritized sequentially:
 5. **Milestone 5**: `✓ COMPLETED & VERIFIED` (Sub-GHz LoRa SX1262 transceiver bridge, 237-byte MTU chunking with CCITT CRC16, wearable wrist companion HUD, and sensor-fusion tilt-compensated compass calibration).
 
 > **Production Readiness Status**: All 5 Milestones are fully implemented, verified with comprehensive unit & E2E integration test suites, and validated visually across the mobile client, GM command center, and live documentation laboratory.
+
+---
+
+## ⚡ GridCommand Version 2.0: Next-Generation Tactical OS
+
+Detailed specification available in [V2_VISION.md](V2_VISION.md).
+
+### Version 2.0 Modules
+1. **Defense Interoperability & ATAK Cursor-on-Target (CoT)**:
+   - Bidirectional CoT XML translation conforming to MIL-STD-2525 / NATO Symbology.
+   - Live stream GridCommand Blue Force Tracking and Objective states into ATAK/WinTAK/CivTAK and QGIS.
+2. **Dynamic Tactical Weather & Electronic Warfare (EW) Jamming**:
+   - Environmental simulation: rain, thermal fog, smoke screens with wind vectors, and night vision phosphor shaders.
+   - Deployable EW jamming zones causing simulated RF degradation, packet loss, and GPS denial.
+3. **Autonomous AI OPFOR Red-Team Bot Fleet**:
+   - Waypoint patrol AI simulating adversary combatants contesting objectives and triggering proximity SPOTREPs.
+   - Procedural tactical DAG scenario generator creating balanced missions based on terrain elevation ridges and depressions.
+4. **AR Spatial Camera Overlay HUD**:
+   - Device camera AR overlay displaying floating 3D objective markers, distance, and squad member virtual tags.
+5. **Tactical Acoustic Intercom & Push-To-Talk (PTT)**:
+   - Low-bandwidth packetized voice bursts and tactical quick-shouts distributed over mesh gossip.
+6. **Air-Gapped Field Edge Deployment Suite**:
+   - One-command field installation script (`deploy/install.sh`) and hardened production Docker stack (`deploy/docker-compose.prod.yml`).

@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: gridcommand-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend-ingress:
+    build:
+      context: ..
+      dockerfile: services/backend-ingress/Dockerfile
+    container_name: gridcommand-backend
+    restart: unless-stopped
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - HOST=0.0.0.0
+      - PORT=8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  nginx-gateway:
+    image: nginx:1.27-alpine
+    container_name: gridcommand-gateway
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/basecamp.conf:/etc/nginx/conf.d/default.conf:ro
+      - ../apps/docs/dist:/usr/share/nginx/html/docs:ro
+      - ../apps/gm-dashboard/dist:/usr/share/nginx/html/dashboard:ro
+      - ../apps/mobile/dist:/usr/share/nginx/html/mobile:ro
+    depends_on:
+      - backend-ingress
+
+volumes:
+  redis_data:

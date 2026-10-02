@@ -20,8 +20,16 @@ This document details the concrete implementation strategy for GridCommand, a de
   - `.github/workflows/deploy-pages.yml`: Automated GitHub Pages deploy for `apps/docs`.
 
 ## Milestones & Phasing
-1. **Milestone 1**: Scaffolding, Tooling & Core CRDT/Crypto/Theme Packages.
-2. **Milestone 2**: Frontend Applications (Mobile Client, GM Dashboard, Docs Site).
-3. **Milestone 3**: Python Microservices with Astral `uv` (Ingress & DAG Rule Engine).
-4. **Milestone 4**: CI/CD Pipelines, GitHub Actions, and Remote Repository Push.
-5. **Milestone 5**: Verification, Visual Assets, Screenshots, and Final Validation.
+1. **Milestone 1**: Scaffolding, Tooling & Core CRDT/Crypto/Theme Packages (`✓ COMPLETED`).
+2. **Milestone 2**: Frontend Applications - Mobile Client, GM Dashboard, Docs Site (`✓ COMPLETED`).
+3. **Milestone 3**: Dynamic DAG Mission Builder, Squad Roster & Signed Manifests (`✓ COMPLETED`).
+4. **Milestone 4**: 3D Spatial AAR Playback Engine & Anti-Cheat Cryptographic Audit (`✓ COMPLETED`).
+5. **Milestone 5**: LoRa SX1262 Transceiver Bridge, Wearable Sub-HUD & Sensor Fusion (`✓ COMPLETED`).
+
+## Version 2.0 Architecture & Extensions
+1. **Defense Interoperability (ATAK Cursor-on-Target CoT)**: Bidirectional XML bridge between Yjs CRDT events and standard NATO CoT schemas (`cotGateway.ts`).
+2. **Dynamic Tactical Weather & Electronic Warfare (EW) Jamming**: Real-time simulation of meteorological factors (rain, thermal fog, smoke drift) and deployable EW RF denial zones (`tacticalEnvironment.ts`).
+3. **Autonomous AI OPFOR Red-Team Bot Fleet & Procedural Scenarios**: Adversary AI patrol agents and procedural mission DAG generation (`opforSimulation.ts`).
+4. **AR Spatial Camera Overlay HUD**: Direct camera viewfinder overlay with virtual 3D floating markers and compass azimuth ladder (`ARCameraOverlayWidget.tsx`).
+5. **Tactical Acoustic Intercom (PTT)**: Mesh-packetized voice bursts and tactical quick-shouts (`voiceBurst.ts`, `TacticalIntercomWidget.tsx`).
+6. **Production Field Edge Deployment**: Automated installer (`deploy/install.sh`) and hardened production Docker stack (`deploy/docker-compose.prod.yml`).

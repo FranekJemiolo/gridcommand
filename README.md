@@ -155,15 +155,30 @@ Explore the live interactive architecture and Game Master DVR console hosted on 
 
 ---
 
+## 🚀 Version 2.0 Tactical Architecture
+
+GridCommand v2.0 introduces next-generation tactical field extensions for both Game Masters and operators:
+- **Defense Interoperability (ATAK CoT)**: Bidirectional Cursor-on-Target XML gateway for ATAK/WinTAK/CivTAK and QGIS.
+- **Dynamic Weather & EW Jamming**: Meteorological rain, smoke screens with wind drift, thermal fog, and RF jamming bubbles.
+- **Autonomous AI OPFOR Bots**: Red-team adversary agents executing tactical waypoint patrols and procedural DAG mission authoring.
+- **AR Spatial Camera Overlay HUD**: Direct camera viewfinder overlay with virtual 3D floating markers and compass azimuth ladder.
+- **Tactical Acoustic Intercom (PTT)**: Mesh-packetized voice bursts and tactical quick-shouts.
+- **Automated Field Edge Installer**: One-line field setup script (`./deploy/install.sh`) and hardened production Docker stack (`deploy/docker-compose.prod.yml`).
+
+See the complete [Version 2.0 Vision Specification](docs/V2_VISION.md).
+
+---
+
 ## 🚢 Production Deployment & Field Hardware Setup
 
-Complete end-to-end production deployment instructions are documented in [docs/deployment.md](docs/deployment.md), covering:
+Complete end-to-end production deployment instructions are documented in [docs/deployment.md](docs/deployment.md) and [docs/V2_VISION.md](docs/V2_VISION.md), covering:
 
-1. **Docker Compose Basecamp Server**: Running the full local-first Basecamp server stack (`redis`, `backend-ingress`, `dag-rule-engine`, and `nginx`) with captive portal redirection.
-2. **Field PWA Offline Installation**: Installing the Tactical Field Client directly onto Android/iOS devices without internet or app stores.
-3. **Standalone Android APK Generation**: Compiling and signing native release APKs via Capacitor (`pnpm cap:android` / `npx cap sync android`).
-4. **GL.iNet Tactical Router Setup**: Autonomous offline Wi-Fi bubble with DNS hijacking (`address=/#/192.168.8.1`) and mDNS discovery (`basecamp.local`).
-5. **Air-Gapped Sneakernet Disaster Recovery**: Physical USB-OTG/MicroSD state synchronization scripts (`./scripts/sneakernet-sync.sh`) during total electronic warfare / RF blackout.
+1. **One-Command Automated Installer**: `./deploy/install.sh` builds and configures Node.js, pnpm, Astral uv, and all microservices on Ubuntu, Debian, macOS, or Raspberry Pi.
+2. **Production Docker Compose Stack**: `docker compose -f deploy/docker-compose.prod.yml up -d` launches Redis, FastAPI Ingress, and Nginx.
+3. **Field PWA Offline Installation**: Installing the Tactical Field Client directly onto Android/iOS devices without internet or app stores.
+4. **Standalone Android APK Generation**: Compiling and signing native release APKs via Capacitor (`pnpm cap:android` / `npx cap sync android`).
+5. **GL.iNet Tactical Router Setup**: Autonomous offline Wi-Fi bubble with DNS hijacking (`address=/#/192.168.8.1`) and mDNS discovery (`basecamp.local`).
+6. **Air-Gapped Sneakernet Disaster Recovery**: Physical USB-OTG/MicroSD state synchronization scripts (`./scripts/sneakernet-sync.sh`) during total electronic warfare / RF blackout.
 
 ---
 
