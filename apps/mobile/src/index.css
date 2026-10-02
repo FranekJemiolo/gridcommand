@@ -1,0 +1,27 @@
+@import '@gridcommand/ui-theme/theme.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #000000;
+  overflow: hidden;
+}
+
+/* 45-degree pitch perspective container for Rig Mode simulation */
+.rig-view-container {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.rig-view-pitched {
+  transform: rotateX(25deg);
+  transform-origin: center bottom;
+}

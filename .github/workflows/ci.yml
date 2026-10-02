@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-frontend:
+    name: Frontend Packages & Applications
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.11.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build all packages & apps
+        run: pnpm build
+
+      - name: Run linter
+        run: pnpm lint
+
+      - name: Run unit tests
+        run: pnpm test
+
+  test-backend:
+    name: Python Microservices (uv)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Astral uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Test backend-ingress
+        run: |
+          cd services/backend-ingress
+          uv sync --frozen || uv sync
+          uv run pytest
+
+      - name: Test dag-rule-engine
+        run: |
+          cd services/dag-rule-engine
+          uv sync --frozen || uv sync
+          uv run pytest

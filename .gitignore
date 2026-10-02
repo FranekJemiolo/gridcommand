@@ -1,0 +1,38 @@
+# Node & Dependencies
+node_modules/
+.pnpm-store/
+dist/
+build/
+.turbo/
+coverage/
+
+# Capacitor
+/apps/mobile/android/
+/apps/mobile/ios/
+*.orig.*
+
+# Python & uv
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+
+# IDE & OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Map tiles & large media
+*.pmtiles
+*.mbtiles

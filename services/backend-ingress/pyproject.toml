@@ -1,0 +1,18 @@
+[project]
+name = "backend-ingress"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.142.2",
+    "httpx>=0.28.1",
+    "pycrdt>=0.14.8",
+    "pytest>=9.1.1",
+    "redis>=8.1.0",
+    "uvicorn>=0.54.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+

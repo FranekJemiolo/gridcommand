@@ -1,0 +1,65 @@
+@layer base {
+  :root {
+    --tac-bg: #000000;
+    --tac-surface: #0a0e14;
+    --tac-border: #1e2638;
+    --tac-text: #e6edf3;
+    --tac-text-dim: #8b949e;
+    --tac-cyan: #00f3ff;
+    --tac-yellow: #ffe600;
+    --tac-green: #00ff66;
+    --tac-red: #ff2200;
+    --tac-orange: #ff5500;
+    --tac-olive: #4b5320;
+    --tac-blue: #0077ff;
+  }
+}
+
+/* Tactical Red-Light Mode: Scotopic Night-Vision Preservation */
+.tactical-red-mode {
+  filter: sepia(100%) hue-rotate(300deg) saturate(600%) brightness(0.85);
+  background-color: #000000 !important;
+}
+
+/* Rain Lock Guard: Touch Prevention */
+.rain-locked {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+/* 60x60px Glove-Friendly Touch Zones */
+.tactical-btn {
+  min-width: 60px;
+  min-height: 60px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-width: 2px;
+  transition: all 0.1s ease-in-out;
+  touch-action: manipulation;
+}
+
+.tactical-btn:active {
+  transform: scale(0.97);
+}
+
+/* Scan Reticle & Radar Animations */
+@keyframes tactical-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 243, 255, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(0, 243, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 243, 255, 0);
+  }
+}
+
+.reticle-pulse {
+  animation: tactical-pulse 2s infinite;
+}
