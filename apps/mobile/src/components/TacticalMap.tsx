@@ -49,9 +49,9 @@ export const TacticalMap: React.FC<TacticalMapProps> = ({
             type: 'raster',
             source: 'osm',
             paint: {
-              'raster-brightness-max': 0.35,
-              'raster-contrast': 0.4,
-              'raster-saturation': -0.9,
+              'raster-brightness-max': 0.95,
+              'raster-contrast': 0.15,
+              'raster-saturation': -0.1,
             },
           },
         ],
@@ -156,5 +156,12 @@ export const TacticalMap: React.FC<TacticalMapProps> = ({
     });
   }, [graph, activeObjectiveId]);
 
-  return <div ref={mapContainer} className="w-full h-full" />;
+  return (
+    <div className="relative w-full h-full">
+      <div ref={mapContainer} className="w-full h-full" />
+      <div className="absolute bottom-1 right-2 text-[9px] text-[#8b949e] bg-black/60 px-1.5 py-0.5 rounded font-mono pointer-events-none z-10 border border-[#1e2638]">
+        © OpenStreetMap
+      </div>
+    </div>
+  );
 };

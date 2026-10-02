@@ -67,10 +67,12 @@ Scaffold, configure, and implement the complete initial codebase for **GridComma
 - `.github/workflows/ci.yml`: Full matrix running `pnpm build`, `pnpm test`, `pnpm lint`, and `uv run pytest` across both Python services on pushes and pull requests.
 - `.github/workflows/deploy-pages.yml`: Automated GitHub Pages build and deployment pipeline for `apps/docs`.
 
-#### 6. Visual Verification
-- Verified all preview servers via browser subagent.
-- Captured high-fidelity screenshots:
+#### 6. Visual Verification & OpenStreetMap Basemap Integration
+- Integrated synchronized GPU-accelerated MapLibre OpenStreetMap basemap directly beneath the Deck.gl 3D hex columns in `apps/gm-dashboard`, with real-time camera synchronization across pitch, bearing, and zoom.
+- Enhanced raster paint brightness and saturation in `apps/mobile` (`TacticalMap.tsx`) so that streets, buildings, paths, contour terrain, and labels from OpenStreetMap are clearly and vividly visible in Rig Mode.
+- Added dynamic basemap mode toggles (`OSM Full` vs `OSM Tactical`) and official attribution.
+- Recaptured high-fidelity visual screenshots:
   - `docs/assets/screenshots/mobile_hud.png`
   - `docs/assets/screenshots/gm_dashboard.png`
   - `docs/assets/screenshots/docs_landing.png`
-- Embedded visual interface captures into `README.md`.
+- Embedded updated visual interface captures into `README.md`.
