@@ -38,9 +38,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build Docs & Demo Site
+      - name: Build packages and Docs Site
         run: |
-          GITHUB_PAGES=true pnpm --filter "@gridcommand/docs" build
+          GITHUB_PAGES=true pnpm build
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
