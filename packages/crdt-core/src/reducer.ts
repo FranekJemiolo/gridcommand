@@ -89,3 +89,87 @@ export function reduceGameState(
 
   return state;
 }
+
+export function reducePeers(
+  events: Map<string, CRDTEventValue> | Record<string, CRDTEventValue>
+): Map<string, import('./types').BlueForcePeer> {
+  const entries: [string, CRDTEventValue][] =
+    events instanceof Map
+      ? Array.from(events.entries())
+      : Object.entries(events);
+
+  // Sort chronologically by HLC
+  const sorted = entries.sort(([hlcA], [hlcB]) => hlcA.localeCompare(hlcB));
+  const peers = new Map<string, import('./types').BlueForcePeer>();
+
+  for (const [hlc, evt] of sorted) {
+    if (!evt || evt.t !== 'BFT' || !evt.dat?.peer) continue;
+    const peerData = evt.dat.peer;
+    const peerId = peerData.id || evt.opr;
+    if (!peerId) continue;
+
+    const existing = peers.get(peerId);
+    const updated: import('./types').BlueForcePeer = {
+      id: peerId,
+      callsign: peerData.callsign || existing?.callsign || evt.opr,
+      squad: peerData.squad || evt.sq || 'squad_alpha',
+      role: peerData.role || existing?.role || 'POINTMAN',
+      lat: peerData.lat !== undefined ? peerData.lat : (existing?.lat ?? 0),
+      lon: peerData.lon !== undefined ? peerData.lon : (existing?.lon ?? 0),
+      alt: peerData.alt ?? existing?.alt,
+      heading: peerData.heading ?? existing?.heading,
+      battery: peerData.battery ?? existing?.battery ?? 100,
+      status: peerData.status || existing?.status || 'ACTIVE',
+      hlc,
+      updatedAt: peerData.updatedAt || Date.now(),
+    };
+    peers.set(peerId, updated);
+  }
+
+  return peers;
+}
+
+export function reduceTacticalMarkers(
+  events: Map<string, CRDTEventValue> | Record<string, CRDTEventValue>,
+  currentTimeMs: number = Date.now()
+): Map<string, import('./types').TacticalMarker> {
+  const entries: [string, CRDTEventValue][] =
+    events instanceof Map
+      ? Array.from(events.entries())
+      : Object.entries(events);
+
+  const sorted = entries.sort(([hlcA], [hlcB]) => hlcA.localeCompare(hlcB));
+  const markers = new Map<string, import('./types').TacticalMarker>();
+
+  for (const [hlc, evt] of sorted) {
+    if (!evt || evt.t !== 'SPOTREP' || !evt.dat?.marker) continue;
+    const m = evt.dat.marker;
+    if (!m.id || m.lat === undefined || m.lon === undefined) continue;
+
+    const expiresAt = m.expiresAt || (currentTimeMs + 15 * 60 * 1000);
+    const isActive = m.active !== false && expiresAt > currentTimeMs;
+
+    const marker: import('./types').TacticalMarker = {
+      id: m.id,
+      type: m.type || 'HOSTILE',
+      lat: m.lat,
+      lon: m.lon,
+      reportedBy: m.reportedBy || evt.opr,
+      squad: m.squad || evt.sq,
+      title: m.title || 'CONTACT REPORT',
+      notes: m.notes,
+      hlc,
+      createdAt: m.createdAt || currentTimeMs,
+      expiresAt,
+      active: isActive,
+    };
+
+    if (m.active === false) {
+      markers.delete(m.id);
+    } else {
+      markers.set(m.id, marker);
+    }
+  }
+
+  return markers;
+}

@@ -1,5 +1,16 @@
 import { create } from 'zustand';
-import { MissionGraph, CRDTEventValue, HLC, reduceGameState } from '@gridcommand/crdt-core';
+import {
+  MissionGraph,
+  CRDTEventValue,
+  HLC,
+  reduceGameState,
+  BlueForcePeer,
+  TacticalMarker,
+  TacticalMarkerType,
+  reducePeers,
+  reduceTacticalMarkers,
+} from '@gridcommand/crdt-core';
+import { TacticalAudioEngine } from '@gridcommand/ui-theme';
 
 export const INITIAL_MISSION_GRAPH: MissionGraph = {
   nodes: {
@@ -69,12 +80,16 @@ interface GameState {
   deviceId: string;
   squadId: string;
   operatorId: string;
+  callsign: string;
   clock: HLC;
   graph: MissionGraph;
   events: Record<string, CRDTEventValue>;
+  peers: Record<string, BlueForcePeer>;
+  markers: Record<string, TacticalMarker>;
   redMode: boolean;
   rainLock: boolean;
   rigPitch: boolean;
+  audioEnabled: boolean;
   heading: number;
   location: { lat: number; lon: number };
   activeObjectiveId: string;
@@ -88,10 +103,13 @@ interface GameState {
   toggleRedMode: () => void;
   toggleRainLock: () => void;
   toggleRigPitch: () => void;
+  toggleAudio: () => void;
   setHeading: (deg: number) => void;
   setLocation: (loc: { lat: number; lon: number }) => void;
   captureObjective: (nodeId: string, proof?: string) => boolean;
   verifyPin: (pin: string) => boolean;
+  dropMarker: (marker: { type: TacticalMarkerType; title: string; notes?: string }) => void;
+  removeMarker: (markerId: string) => void;
   forceMeshSync: () => void;
   exportSneakernetCRDT: () => string;
 }
@@ -99,16 +117,79 @@ interface GameState {
 export const useGameStore = create<GameState>((set, get) => {
   const clock = new HLC('devAlphaPointman');
 
+  const initialPeers: Record<string, BlueForcePeer> = {
+    alpha_lead: {
+      id: 'alpha_lead',
+      callsign: 'Viper Actual',
+      squad: 'squad_alpha',
+      role: 'LEADER',
+      lat: 54.4098,
+      lon: 18.539,
+      heading: 45,
+      battery: 96,
+      status: 'ACTIVE',
+      hlc: '2026-10-02T14:00:00.000Z-0000-devAlpha1',
+      updatedAt: Date.now() - 5000,
+    },
+    alpha_medic: {
+      id: 'alpha_medic',
+      callsign: 'Viper-2 (Doc)',
+      squad: 'squad_alpha',
+      role: 'MEDIC',
+      lat: 54.4065,
+      lon: 18.536,
+      heading: 30,
+      battery: 89,
+      status: 'ACTIVE',
+      hlc: '2026-10-02T14:00:10.000Z-0000-devAlpha2',
+      updatedAt: Date.now() - 12000,
+    },
+    bravo_scout: {
+      id: 'bravo_scout',
+      callsign: 'Coyote-1',
+      squad: 'squad_bravo',
+      role: 'POINTMAN',
+      lat: 54.402,
+      lon: 18.53,
+      heading: 210,
+      battery: 84,
+      status: 'ACTIVE',
+      hlc: '2026-10-02T14:00:20.000Z-0000-devBravo1',
+      updatedAt: Date.now() - 45000,
+    },
+  };
+
+  const initialMarkers: Record<string, TacticalMarker> = {
+    marker_init_01: {
+      id: 'marker_init_01',
+      type: 'HAZARD',
+      lat: 54.4055,
+      lon: 18.534,
+      reportedBy: 'Viper-2 (Doc)',
+      squad: 'squad_alpha',
+      title: 'Barbed Wire & Trench Obstacle',
+      notes: 'Dense wire entanglement, passable only on foot single-file',
+      hlc: '2026-10-02T14:00:05.000Z-0000-devAlpha2',
+      createdAt: Date.now() - 180000,
+      expiresAt: Date.now() + 12 * 60 * 1000,
+      active: true,
+    },
+  };
+
   return {
     deviceId: 'devAlphaPointman',
     squadId: 'squad_alpha',
     operatorId: 'alpha_pointman',
+    callsign: 'Viper-Point',
     clock,
     graph: INITIAL_MISSION_GRAPH,
     events: {},
+    peers: initialPeers,
+    markers: initialMarkers,
     redMode: false,
     rainLock: false,
     rigPitch: true,
+    audioEnabled: true,
     heading: 42,
     location: { lat: 54.408, lon: 18.5385 }, // Near Pachołek in Oliwa, Gdańsk
     activeObjectiveId: 'bunker_01',
@@ -162,6 +243,14 @@ export const useGameStore = create<GameState>((set, get) => {
     toggleRedMode: () => set((s) => ({ redMode: !s.redMode })),
     toggleRainLock: () => set((s) => ({ rainLock: !s.rainLock })),
     toggleRigPitch: () => set((s) => ({ rigPitch: !s.rigPitch })),
+    toggleAudio: () => {
+      const nextState = !get().audioEnabled;
+      TacticalAudioEngine.setEnabled(nextState);
+      if (nextState) {
+        TacticalAudioEngine.play('PING');
+      }
+      set({ audioEnabled: nextState });
+    },
     setHeading: (heading) => set({ heading }),
     setLocation: (location) => {
       const activeObj = get().graph.nodes[get().activeObjectiveId];
@@ -171,6 +260,9 @@ export const useGameStore = create<GameState>((set, get) => {
         const dLon = (activeObj.lon - location.lon) * 111000 * Math.cos((location.lat * Math.PI) / 180);
         const dist = Math.sqrt(dLat * dLat + dLon * dLon);
         isBreached = dist <= 35; // 35m breach threshold
+      }
+      if (isBreached && !get().isBreached) {
+        TacticalAudioEngine.play('CONTACT', { enableHaptics: true });
       }
       set({ location, isBreached });
     },
@@ -205,6 +297,8 @@ export const useGameStore = create<GameState>((set, get) => {
         }
       }
 
+      TacticalAudioEngine.play('CAPTURE', { enableHaptics: true });
+
       set({
         events: updatedEvents,
         graph: updatedGraph,
@@ -222,11 +316,71 @@ export const useGameStore = create<GameState>((set, get) => {
       if (activeNode && activeNode.pin === enteredPin) {
         return captureObjective(activeObjectiveId, `MANUAL_PIN_OVER_${enteredPin}`);
       }
+      TacticalAudioEngine.play('FREEZE');
       return false;
+    },
+
+    dropMarker: ({ type, title, notes }) => {
+      const { clock, location, operatorId, squadId, callsign, events, markers } = get();
+      const markerId = `spotrep_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      const now = Date.now();
+      const newMarker: TacticalMarker = {
+        id: markerId,
+        type,
+        lat: location.lat,
+        lon: location.lon,
+        reportedBy: callsign,
+        squad: squadId,
+        title,
+        notes,
+        hlc: clock.now(),
+        createdAt: now,
+        expiresAt: now + 15 * 60 * 1000,
+        active: true,
+      };
+
+      const newEvent: CRDTEventValue = {
+        t: 'SPOTREP',
+        sq: squadId,
+        opr: operatorId,
+        dat: { marker: newMarker },
+      };
+
+      TacticalAudioEngine.play(
+        type === 'HOSTILE' ? 'CONTACT' : type === 'HAZARD' ? 'ARTILLERY' : 'PING',
+        { enableHaptics: true }
+      );
+
+      set({
+        events: { ...events, [newMarker.hlc]: newEvent },
+        markers: { ...markers, [markerId]: newMarker },
+        totalUpdatesTransferred: get().totalUpdatesTransferred + 1,
+      });
+    },
+
+    removeMarker: (markerId: string) => {
+      const { clock, operatorId, squadId, events, markers } = get();
+      const marker = markers[markerId];
+      if (!marker) return;
+      const hlcKey = clock.now();
+      const newEvent: CRDTEventValue = {
+        t: 'SPOTREP',
+        sq: squadId,
+        opr: operatorId,
+        dat: { marker: { id: markerId, active: false } },
+      };
+      const updatedMarkers = { ...markers };
+      delete updatedMarkers[markerId];
+      set({
+        events: { ...events, [hlcKey]: newEvent },
+        markers: updatedMarkers,
+        totalUpdatesTransferred: get().totalUpdatesTransferred + 1,
+      });
     },
 
     forceMeshSync: () => {
       const { totalUpdatesTransferred } = get();
+      TacticalAudioEngine.play('PING');
       set({ totalUpdatesTransferred: totalUpdatesTransferred + 4 });
     },
 

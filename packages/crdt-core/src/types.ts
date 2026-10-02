@@ -22,7 +22,41 @@ export interface MissionGraph {
   nodes: Record<string, MissionNode>;
 }
 
-export type EventType = 'CAPT' | 'OVER' | 'HAZ' | 'SOS' | 'MULE' | 'FREEZE';
+export type EventType = 'CAPT' | 'OVER' | 'HAZ' | 'SOS' | 'MULE' | 'FREEZE' | 'SPOTREP' | 'BFT';
+
+export type BlueForceRole = 'LEADER' | 'POINTMAN' | 'MEDIC' | 'RTO' | 'MARKSMAN';
+
+export interface BlueForcePeer {
+  id: string; // Operator identifier / pubkey fingerprint
+  callsign: string; // Tactical call-sign, e.g. "Viper-1"
+  squad: string; // Squad ID, e.g. "squad_alpha"
+  role: BlueForceRole;
+  lat: number;
+  lon: number;
+  alt?: number;
+  heading?: number;
+  battery: number; // Percentage 0-100
+  status: 'ACTIVE' | 'ENGAGING' | 'CASUALTY' | 'RTB';
+  hlc: string;
+  updatedAt: number;
+}
+
+export type TacticalMarkerType = 'HOSTILE' | 'HAZARD' | 'MEDEVAC' | 'SUPPLY' | 'RALLY';
+
+export interface TacticalMarker {
+  id: string;
+  type: TacticalMarkerType;
+  lat: number;
+  lon: number;
+  reportedBy: string; // Callsign
+  squad: string;
+  title: string;
+  notes?: string;
+  hlc: string;
+  createdAt: number;
+  expiresAt: number;
+  active: boolean;
+}
 
 export interface EventData {
   o?: string; // Objective Node ID (for CAPT and OVER)
@@ -33,6 +67,9 @@ export interface EventData {
   st?: NodeStatus; // New status (for OVER)
   poly?: [number, number][]; // Polygon coordinates for HAZ
   ttl?: number; // Countdown seconds for HAZ evacuation
+  // BFT and SPOTREP fields
+  peer?: Partial<BlueForcePeer>;
+  marker?: Partial<TacticalMarker>;
   [key: string]: unknown;
 }
 

@@ -14,13 +14,20 @@ import {
   Github,
   BookOpen,
 } from 'lucide-react';
-import { TacticalButton, StatusBadge, CompassBearing } from '@gridcommand/ui-theme';
+import { TacticalButton, StatusBadge, CompassBearing, TacticalAudioEngine } from '@gridcommand/ui-theme';
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'mobile-hud' | 'gm-center' | 'mesh-sim' | 'bom'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'mobile-hud' | 'gm-center' | 'mesh-sim' | 'bom' | 'roadmap'>('overview');
   const [demoRedMode, setDemoRedMode] = useState(false);
   const [demoRainLock, setDemoRainLock] = useState(false);
   const [demoCaptured, setDemoCaptured] = useState(false);
+  const [audioFeedbackText, setAudioFeedbackText] = useState<string | null>(null);
+
+  const triggerAudioDemo = (cue: 'CONTACT' | 'ARTILLERY' | 'CAPTURE' | 'FREEZE' | 'PING', desc: string) => {
+    TacticalAudioEngine.play(cue, { enableHaptics: true });
+    setAudioFeedbackText(`[PLAYING ACOUSTIC CUE: ${desc}]`);
+    setTimeout(() => setAudioFeedbackText(null), 2500);
+  };
 
   return (
     <div className={`min-h-screen bg-[#0b0f0b] text-[#e8ede8] font-sans ${demoRedMode ? 'tactical-red-mode' : ''}`}>
@@ -42,7 +49,7 @@ export const App: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-1 sm:gap-3 text-xs font-mono">
-            {(['overview', 'mobile-hud', 'gm-center', 'mesh-sim', 'bom'] as const).map((tab) => (
+            {(['overview', 'mobile-hud', 'gm-center', 'mesh-sim', 'bom', 'roadmap'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -52,7 +59,7 @@ export const App: React.FC = () => {
                     : 'text-[#9ba89b] hover:text-[#e8ede8]'
                 }`}
               >
-                {tab.replace('-', ' ')}
+                {tab === 'roadmap' ? 'ROADMAP 🚀' : tab.replace('-', ' ')}
               </button>
             ))}
 
@@ -90,6 +97,9 @@ export const App: React.FC = () => {
             </TacticalButton>
             <TacticalButton variant="yellow" onClick={() => setActiveTab('gm-center')}>
               EXPLORE GM COMMAND CENTER
+            </TacticalButton>
+            <TacticalButton variant="coyote" onClick={() => setActiveTab('roadmap')}>
+              PRODUCT ROADMAP 🚀
             </TacticalButton>
             <TacticalButton variant="neutral" onClick={() => setActiveTab('mesh-sim')}>
               MESH TOPOLOGY VISUALIZER
@@ -486,6 +496,265 @@ export const App: React.FC = () => {
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Product Roadmap */}
+        {activeTab === 'roadmap' && (
+          <div className="space-y-10 font-mono">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#4e9b4e]/50 bg-[#3b5323]/25 text-[#68d391] text-xs mb-3">
+                <span className="w-2 h-2 rounded-full bg-[#68d391] animate-pulse" />
+                SYSTEM EVOLUTION SPECIFICATION
+              </div>
+              <h2 className="text-3xl font-black text-white">GridCommand Product Maturity Roadmap</h2>
+              <p className="text-xs text-[#9ba89b] mt-1 max-w-3xl leading-relaxed">
+                Strategic engineering trajectory transitioning the MVP into a hardened, field-ready tactical platform across five distinct milestones.
+              </p>
+            </div>
+
+            {/* Live Interactive NATO Acoustic Earcons Soundboard */}
+            <div className="p-6 rounded-xl bg-gradient-to-r from-[#141c14] to-[#1c261c] border-2 border-[#453724] space-y-4">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <h3 className="text-sm font-bold text-[#f5b700] uppercase tracking-wider flex items-center gap-2">
+                    <span>🔊</span>
+                    <span>NATO Standard Acoustic Earcons Synthesizer (Web Audio API)</span>
+                  </h3>
+                  <p className="text-xs text-[#9ba89b] mt-0.5">
+                    Click each tactical frequency profile to preview the audio cues played to operators via bone-conduction headsets.
+                  </p>
+                </div>
+                {audioFeedbackText && (
+                  <span className="text-xs font-bold text-[#68d391] animate-pulse">
+                    {audioFeedbackText}
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <button
+                  onClick={() => triggerAudioDemo('CONTACT', 'Hostile Contact Warning')}
+                  className="p-3 rounded bg-[#0b0f0b] border border-[#c5221f] text-[#c5221f] hover:bg-[#c5221f]/20 transition-all text-left"
+                >
+                  <div className="text-base mb-1">🔴</div>
+                  <div className="font-bold text-xs">CONTACT ALARM</div>
+                  <div className="text-[10px] text-[#9ba89b] mt-1">Dual sawtooth pulse</div>
+                </button>
+
+                <button
+                  onClick={() => triggerAudioDemo('ARTILLERY', 'Incoming Artillery / Hazard')}
+                  className="p-3 rounded bg-[#0b0f0b] border border-[#f5b700] text-[#f5b700] hover:bg-[#f5b700]/20 transition-all text-left"
+                >
+                  <div className="text-base mb-1">⚠️</div>
+                  <div className="font-bold text-xs">ARTILLERY SIREN</div>
+                  <div className="text-[10px] text-[#9ba89b] mt-1">Modulated triangle wave</div>
+                </button>
+
+                <button
+                  onClick={() => triggerAudioDemo('CAPTURE', 'Objective Captured Chime')}
+                  className="p-3 rounded bg-[#0b0f0b] border border-[#68d391] text-[#68d391] hover:bg-[#68d391]/20 transition-all text-left"
+                >
+                  <div className="text-base mb-1">✓</div>
+                  <div className="font-bold text-xs">CAPTURE CHIME</div>
+                  <div className="text-[10px] text-[#9ba89b] mt-1">Ascending triad chord</div>
+                </button>
+
+                <button
+                  onClick={() => triggerAudioDemo('FREEZE', 'Emergency Global Freeze')}
+                  className="p-3 rounded bg-[#0b0f0b] border border-[#e53e3e] text-[#e53e3e] hover:bg-[#e53e3e]/20 transition-all text-left"
+                >
+                  <div className="text-base mb-1">🚨</div>
+                  <div className="font-bold text-xs">FREEZE BUZZ</div>
+                  <div className="text-[10px] text-[#9ba89b] mt-1">Descending square buzz</div>
+                </button>
+
+                <button
+                  onClick={() => triggerAudioDemo('PING', 'Tactical Radar Mesh Ping')}
+                  className="p-3 rounded bg-[#0b0f0b] border border-[#c7a76c] text-[#c7a76c] hover:bg-[#c7a76c]/20 transition-all text-left"
+                >
+                  <div className="text-base mb-1">📡</div>
+                  <div className="font-bold text-xs">RADAR PING</div>
+                  <div className="text-[10px] text-[#9ba89b] mt-1">Subtle chirp chirp</div>
+                </button>
+              </div>
+            </div>
+
+            {/* Five Detailed Milestones */}
+            <div className="space-y-6">
+              {/* Milestone 1 */}
+              <div className="p-6 rounded-xl bg-[#141c14] border-2 border-[#4e9b4e] space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-3">
+                    <span className="px-2.5 py-1 rounded bg-[#4e9b4e]/30 border border-[#4e9b4e] text-[#68d391] text-xs font-black">
+                      MILESTONE 1
+                    </span>
+                    <h3 className="text-lg font-bold text-white">
+                      Tactical Field Comms &amp; Situational Awareness
+                    </h3>
+                  </div>
+                  <span className="text-xs px-2.5 py-1 rounded bg-[#4e9b4e]/20 text-[#68d391] font-bold border border-[#4e9b4e]">
+                    ✓ OPERATIONAL &amp; VERIFIED
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs pt-2">
+                  <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
+                    <div className="text-[#f5b700] font-bold">Blue Force Tracking (BFT)</div>
+                    <p className="text-[#9ba89b] text-[11px] leading-relaxed">
+                      Decentralized peer presence and telemetry broadcast over Yjs CRDT. Live compass chevrons, squad color coding (Olive / Coyote), battery level, and callsign labels.
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
+                    <div className="text-[#f5b700] font-bold">Synthesized NATO Acoustic Earcons</div>
+                    <p className="text-[#9ba89b] text-[11px] leading-relaxed">
+                      Web Audio API military alert synthesizer providing hands-free situational awareness for bone-conduction headsets (Contact, Artillery, Capture, Freeze).
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
+                    <div className="text-[#f5b700] font-bold">Field SPOTREP Quick Markers</div>
+                    <p className="text-[#9ba89b] text-[11px] leading-relaxed">
+                      1-tap rapid marker drops on the tactical map (Hostile Contact, Hazard Obstacle, Medevac, Supply Cache, Rally Point) with auto-decay timers.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Milestone 2 */}
+              <div className="p-6 rounded-xl bg-[#141c14] border border-[#2e3d2e] space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-3">
+                    <span className="px-2.5 py-1 rounded bg-[#f5b700]/20 border border-[#f5b700] text-[#f5b700] text-xs font-black">
+                      MILESTONE 2
+                    </span>
+                    <h3 className="text-lg font-bold text-white">
+                      Offline Map Packs &amp; Terrain Elevation Profile
+                    </h3>
+                  </div>
+                  <span className="text-xs px-2.5 py-1 rounded bg-[#f5b700]/10 text-[#f5b700] font-bold border border-[#f5b700]/40">
+                    QUEUED // STAGE 2
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs pt-2">
+                  <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
+                    <div className="text-[#c7a76c] font-bold">Offline Sector Storage Manager</div>
+                    <p className="text-[#9ba89b] text-[11px] leading-relaxed">
+                      Client-side IndexedDB map pack download manager. Pre-cache 10km² tactical sectors at high zoom levels with offline storage quotas.
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
+                    <div className="text-[#c7a76c] font-bold">Line-of-Sight &amp; Elevation Profile</div>
+                    <p className="text-[#9ba89b] text-[11px] leading-relaxed">
+                      Digital elevation contour slice calculations between operator GPS coordinates and objectives, highlighting blocked radio and visual paths.
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
+                    <div className="text-[#c7a76c] font-bold">MGRS / UTM Coordinate Engine</div>
+                    <p className="text-[#9ba89b] text-[11px] leading-relaxed">
+                      Military Grid Reference System 10-figure conversion engine for standard NATO radio communication and coordination.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Milestone 3 */}
+              <div className="p-6 rounded-xl bg-[#141c14] border border-[#2e3d2e] space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-3">
+                    <span className="px-2.5 py-1 rounded bg-[#c7a76c]/20 border border-[#c7a76c] text-[#c7a76c] text-xs font-black">
+                      MILESTONE 3
+                    </span>
+                    <h3 className="text-lg font-bold text-white">
+                      Dynamic Mission Builder &amp; Graph Editor
+                    </h3>
+                  </div>
+                  <span className="text-xs px-2.5 py-1 rounded bg-[#c7a76c]/10 text-[#c7a76c] font-bold border border-[#c7a76c]/40">
+                    SCHEDULED // STAGE 3
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs pt-2">
+                  <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
+                    <div className="text-[#d4a373] font-bold">Visual DAG Mission Graph Editor</div>
+                    <p className="text-[#9ba89b] text-[11px] leading-relaxed">
+                      GM map-based objective creator with geofence radii, hold-timer triggers, and drag-and-drop prerequisite dependency trees.
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
+                    <div className="text-[#d4a373] font-bold">Squad Roster &amp; Keypair Approval</div>
+                    <p className="text-[#9ba89b] text-[11px] leading-relaxed">
+                      Operational roster management, callsign assignment, specialist roles (Medic, RTO, Marksman), and Ed25519 public key registries.
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
+                    <div className="text-[#d4a373] font-bold">Signed Mission Package Export</div>
+                    <p className="text-[#9ba89b] text-[11px] leading-relaxed">
+                      Air-gapped mission manifest distribution via Base45 high-density QR code scanning or USB OTG flash drive loading.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Milestone 4 */}
+              <div className="p-6 rounded-xl bg-[#141c14] border border-[#2e3d2e] space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-3">
+                    <span className="px-2.5 py-1 rounded bg-[#8a6240]/30 border border-[#8a6240] text-[#c7a76c] text-xs font-black">
+                      MILESTONE 4
+                    </span>
+                    <h3 className="text-lg font-bold text-white">
+                      After-Action Review (AAR) &amp; Cryptographic Audit
+                    </h3>
+                  </div>
+                  <span className="text-xs px-2.5 py-1 rounded bg-[#8a6240]/15 text-[#c7a76c] font-bold border border-[#8a6240]/40">
+                    SCHEDULED // STAGE 4
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-2">
+                  <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
+                    <div className="text-[#f5b700] font-bold">3D Spatial Timeline Playback Engine</div>
+                    <p className="text-[#9ba89b] text-[11px] leading-relaxed">
+                      Deck.gl TripsLayer spatial timeline replay showing full squad maneuvers, skirmishes, and territory capture speed curves with speed control (1x, 5x, 20x).
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
+                    <div className="text-[#f5b700] font-bold">Cryptographic Anti-Cheat &amp; Compliance Audit</div>
+                    <p className="text-[#9ba89b] text-[11px] leading-relaxed">
+                      Automated validation of all signed CRDT event logs against physical sensor bounds, outputting signed tamper-proof audit certificates for tournament and defense evaluations.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Milestone 5 */}
+              <div className="p-6 rounded-xl bg-[#141c14] border border-[#2e3d2e] space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-3">
+                    <span className="px-2.5 py-1 rounded bg-[#3b5323]/40 border border-[#4e9b4e] text-[#68d391] text-xs font-black">
+                      MILESTONE 5
+                    </span>
+                    <h3 className="text-lg font-bold text-white">
+                      Hardware LoRa Bridge &amp; Native Wearable Ecosystem
+                    </h3>
+                  </div>
+                  <span className="text-xs px-2.5 py-1 rounded bg-[#3b5323]/20 text-[#68d391] font-bold border border-[#4e9b4e]/50">
+                    RESEARCH &amp; LAB // STAGE 5
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-2">
+                  <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
+                    <div className="text-[#68d391] font-bold">LoRa SX1262 Web Serial &amp; BLE Bridge</div>
+                    <p className="text-[#9ba89b] text-[11px] leading-relaxed">
+                      Direct connection to LilyGO T-Echo SX1262 transceivers, transparently fragmenting Base45 CRDT delta packets into 237-byte LoRa payloads for 2–5km deep canopy reach.
+                    </p>
+                  </div>
+                  <div className="p-3.5 rounded bg-[#0b0f0b] border border-[#2e3d2e] space-y-1">
+                    <div className="text-[#68d391] font-bold">Wearable Companion Sub-HUD (WearOS / Apple Watch)</div>
+                    <p className="text-[#9ba89b] text-[11px] leading-relaxed">
+                      Lightweight wrist companion display for target bearing arrow, objective status, and instant glove-friendly PIN acknowledgment.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}

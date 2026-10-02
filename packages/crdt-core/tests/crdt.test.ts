@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { HLC } from '../src/hlc';
 import { chunkPayload, BLEChunkAssembler } from '../src/bleChunker';
-import { reduceGameState } from '../src/reducer';
+import { reduceGameState, reducePeers, reduceTacticalMarkers } from '../src/reducer';
 import { MissionGraph, CRDTEventValue } from '../src/types';
 
 describe('Hybrid Logical Clock (HLC)', () => {
@@ -127,5 +127,140 @@ describe('Deterministic DAG Reducer', () => {
     expect(state1.nodes['radar_hq'].status).toBe('RESOLVED');
     expect(state1.nodes['radar_hq'].owner).toBe('squad_bravo');
     expect(state1.nodes['bunker_01'].status).toBe('RESOLVED');
+  });
+});
+
+describe('Blue Force Tracking (BFT) State Reducer', () => {
+  it('aggregates peer telemetry and updates monotonically by HLC', () => {
+    const events: Record<string, CRDTEventValue> = {
+      '2026-10-02T14:01:00.000Z-0000-devAlpha1': {
+        t: 'BFT',
+        sq: 'squad_alpha',
+        opr: 'alpha_lead',
+        dat: {
+          peer: {
+            id: 'alpha_lead',
+            callsign: 'Viper-1',
+            squad: 'squad_alpha',
+            role: 'LEADER',
+            lat: 54.401,
+            lon: 18.552,
+            battery: 95,
+            status: 'ACTIVE',
+          },
+        },
+      },
+      '2026-10-02T14:02:00.000Z-0000-devAlpha1': {
+        t: 'BFT',
+        sq: 'squad_alpha',
+        opr: 'alpha_lead',
+        dat: {
+          peer: {
+            id: 'alpha_lead',
+            lat: 54.402,
+            lon: 18.553,
+            battery: 94,
+            status: 'ENGAGING',
+          },
+        },
+      },
+      '2026-10-02T14:01:30.000Z-0000-devBravo1': {
+        t: 'BFT',
+        sq: 'squad_bravo',
+        opr: 'bravo_lead',
+        dat: {
+          peer: {
+            id: 'bravo_lead',
+            callsign: 'Coyote-1',
+            squad: 'squad_bravo',
+            role: 'LEADER',
+            lat: 54.398,
+            lon: 18.549,
+            battery: 88,
+            status: 'ACTIVE',
+          },
+        },
+      },
+    };
+
+    const peers = reducePeers(events);
+    expect(peers.size).toBe(2);
+
+    const viper = peers.get('alpha_lead');
+    expect(viper?.callsign).toBe('Viper-1');
+    expect(viper?.lat).toBe(54.402);
+    expect(viper?.battery).toBe(94);
+    expect(viper?.status).toBe('ENGAGING');
+
+    const coyote = peers.get('bravo_lead');
+    expect(coyote?.callsign).toBe('Coyote-1');
+    expect(coyote?.squad).toBe('squad_bravo');
+  });
+});
+
+describe('Field SPOTREP Tactical Markers', () => {
+  it('creates active markers and supports removal and expiration', () => {
+    const now = 1760000000000;
+    const events: Record<string, CRDTEventValue> = {
+      '2026-10-02T14:05:00.000Z-0000-devAlpha1': {
+        t: 'SPOTREP',
+        sq: 'squad_alpha',
+        opr: 'alpha_scout',
+        dat: {
+          marker: {
+            id: 'marker_01',
+            type: 'HOSTILE',
+            lat: 54.403,
+            lon: 18.555,
+            title: 'Enemy Sighting 2x',
+            createdAt: now,
+            expiresAt: now + 600000,
+            active: true,
+          },
+        },
+      },
+      '2026-10-02T14:06:00.000Z-0000-devBravo1': {
+        t: 'SPOTREP',
+        sq: 'squad_bravo',
+        opr: 'bravo_scout',
+        dat: {
+          marker: {
+            id: 'marker_02',
+            type: 'HAZARD',
+            lat: 54.399,
+            lon: 18.548,
+            title: 'Minefield Warning',
+            createdAt: now,
+            expiresAt: now + 300000,
+            active: true,
+          },
+        },
+      },
+    };
+
+    const markers = reduceTacticalMarkers(events, now);
+    expect(markers.size).toBe(2);
+    expect(markers.get('marker_01')?.type).toBe('HOSTILE');
+    expect(markers.get('marker_02')?.type).toBe('HAZARD');
+
+    // Deactivation event
+    events['2026-10-02T14:07:00.000Z-0000-devAlpha1'] = {
+      t: 'SPOTREP',
+      sq: 'squad_alpha',
+      opr: 'alpha_lead',
+      dat: {
+        marker: {
+          id: 'marker_01',
+          lat: 54.403,
+          lon: 18.555,
+          active: false,
+        },
+      },
+    };
+
+    const updated = reduceTacticalMarkers(events, now);
+    expect(updated.size).toBe(1);
+    expect(updated.has('marker_01')).toBe(false);
+    expect(updated.has('marker_02')).toBe(true);
   });
 });

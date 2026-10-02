@@ -1,11 +1,19 @@
 import { create } from 'zustand';
-import { MissionGraph, CRDTEventValue, HLC, reduceGameState } from '@gridcommand/crdt-core';
+import {
+  MissionGraph,
+  CRDTEventValue,
+  HLC,
+  reduceGameState,
+  BlueForcePeer,
+  TacticalMarker,
+} from '@gridcommand/crdt-core';
+import { TacticalAudioEngine } from '@gridcommand/ui-theme';
 
 export interface TickerEvent {
   id: string;
   hlc: string;
   timeStr: string;
-  type: 'CAPT' | 'OVER' | 'HAZ' | 'SOS' | 'FREEZE';
+  type: 'CAPT' | 'OVER' | 'HAZ' | 'SOS' | 'FREEZE' | 'SPOTREP' | 'BFT';
   squad: string;
   message: string;
   verified: boolean;
@@ -30,6 +38,8 @@ interface GMState {
   events: Record<string, CRDTEventValue>;
   ticker: TickerEvent[];
   hexes: TacticalHex[];
+  peers: Record<string, BlueForcePeer>;
+  markers: Record<string, TacticalMarker>;
   activeHazard: { name: string; remainingSeconds: number } | null;
 
   // Actions
@@ -142,7 +152,73 @@ export const useGMStore = create<GMState>((set, get) => {
         message: 'Bunker 01 captured via NTAG215 NFC token. Ed25519 signature validated.',
         verified: true,
       },
+      {
+        id: 't-4',
+        hlc: '2026-10-02T14:13:30.000Z-0003-devAlpha2',
+        timeStr: '14:13:30',
+        type: 'SPOTREP',
+        squad: 'squad_alpha',
+        message: 'SPOTREP: Barbed Wire Obstacle tagged by Viper-2 (Doc).',
+        verified: true,
+      },
     ],
+    peers: {
+      alpha_lead: {
+        id: 'alpha_lead',
+        callsign: 'Viper Actual',
+        squad: 'squad_alpha',
+        role: 'LEADER',
+        lat: 54.4098,
+        lon: 18.539,
+        heading: 45,
+        battery: 96,
+        status: 'ACTIVE',
+        hlc: '2026-10-02T14:00:00.000Z-0000-devAlpha1',
+        updatedAt: Date.now() - 5000,
+      },
+      alpha_medic: {
+        id: 'alpha_medic',
+        callsign: 'Viper-2 (Doc)',
+        squad: 'squad_alpha',
+        role: 'MEDIC',
+        lat: 54.4065,
+        lon: 18.536,
+        heading: 30,
+        battery: 89,
+        status: 'ACTIVE',
+        hlc: '2026-10-02T14:00:10.000Z-0000-devAlpha2',
+        updatedAt: Date.now() - 12000,
+      },
+      bravo_scout: {
+        id: 'bravo_scout',
+        callsign: 'Coyote-1',
+        squad: 'squad_bravo',
+        role: 'POINTMAN',
+        lat: 54.402,
+        lon: 18.53,
+        heading: 210,
+        battery: 84,
+        status: 'ACTIVE',
+        hlc: '2026-10-02T14:00:20.000Z-0000-devBravo1',
+        updatedAt: Date.now() - 45000,
+      },
+    },
+    markers: {
+      marker_init_01: {
+        id: 'marker_init_01',
+        type: 'HAZARD',
+        lat: 54.4055,
+        lon: 18.534,
+        reportedBy: 'Viper-2 (Doc)',
+        squad: 'squad_alpha',
+        title: 'Barbed Wire Obstacle',
+        notes: 'Dense wire entanglement, passable only single-file',
+        hlc: '2026-10-02T14:00:05.000Z-0000-devAlpha2',
+        createdAt: Date.now() - 180000,
+        expiresAt: Date.now() + 12 * 60 * 1000,
+        active: true,
+      },
+    },
 
     setIsLive: (isLive) => set({ isLive }),
     setScrubPosition: (scrubPosition) => set({ scrubPosition }),
@@ -162,6 +238,7 @@ export const useGMStore = create<GMState>((set, get) => {
           : 'GLOBAL FREEZE LIFTED. Simulation resumed.',
         verified: true,
       };
+      TacticalAudioEngine.play(nextState ? 'FREEZE' : 'PING');
       set({
         globalFreeze: nextState,
         ticker: [newEvent, ...ticker],

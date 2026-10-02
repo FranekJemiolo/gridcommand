@@ -9,15 +9,19 @@ import { useGameStore } from './stores/gameStore';
 import { TacticalMap } from './components/TacticalMap';
 import { GlovePinModal } from './components/GlovePinModal';
 import { ScannerModal } from './components/ScannerModal';
+import { SpotrepModal } from './components/SpotrepModal';
 
 export const App: React.FC = () => {
   const {
     redMode,
     rainLock,
     rigPitch,
+    audioEnabled,
     heading,
     location,
     graph,
+    peers,
+    markers,
     activeObjectiveId,
     isBreached,
     activeTab,
@@ -27,15 +31,18 @@ export const App: React.FC = () => {
     toggleRedMode,
     toggleRainLock,
     toggleRigPitch,
+    toggleAudio,
     setLocation,
     verifyPin,
     captureObjective,
+    dropMarker,
     forceMeshSync,
     exportSneakernetCRDT,
   } = useGameStore();
 
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isSpotrepOpen, setIsSpotrepOpen] = useState(false);
   const [copiedNotification, setCopiedNotification] = useState(false);
 
   const activeNode = graph.nodes[activeObjectiveId];
@@ -117,6 +124,8 @@ export const App: React.FC = () => {
                 playerLocation={location}
                 playerHeading={heading}
                 rigPitch={rigPitch}
+                peers={peers}
+                markers={markers}
               />
             </div>
 
@@ -164,21 +173,29 @@ export const App: React.FC = () => {
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <TacticalButton
                   variant="olive"
-                  className="h-16 text-xs sm:text-sm font-black"
+                  className="h-16 text-[11px] sm:text-xs font-black"
                   onClick={() => setIsScannerOpen(true)}
                 >
-                  SCAN TOKEN / NFC
+                  SCAN TOKEN
                 </TacticalButton>
 
                 <TacticalButton
                   variant="yellow"
-                  className="h-16 text-xs sm:text-sm font-black"
+                  className="h-16 text-[11px] sm:text-xs font-black"
                   onClick={() => setIsPinModalOpen(true)}
                 >
-                  GLOVE PIN ENTRY
+                  GLOVE PIN
+                </TacticalButton>
+
+                <TacticalButton
+                  variant="coyote"
+                  className="h-16 text-[11px] sm:text-xs font-black"
+                  onClick={() => setIsSpotrepOpen(true)}
+                >
+                  SPOTREP
                 </TacticalButton>
               </div>
 
@@ -189,8 +206,14 @@ export const App: React.FC = () => {
                 >
                   RIG PITCH: {rigPitch ? '45° (CHEST)' : '0° (FLAT)'}
                 </button>
-                <div className="text-[10px] text-[#9ba89b]">
-                  VOL UP: CONFIRM PIN | VOL DOWN: HUD TOGGLE
+                <button
+                  onClick={toggleAudio}
+                  className="text-[10px] text-[#f5b700] hover:text-[#e8ede8] border border-[#2e3d2e] px-2 py-1 rounded bg-[#0b0f0b] flex items-center gap-1 font-bold"
+                >
+                  AUDIO: {audioEnabled ? 'ON 🔊' : 'MUTED 🔇'}
+                </button>
+                <div className="text-[10px] text-[#9ba89b] hidden sm:block">
+                  VOL UP: CONFIRM PIN
                 </div>
               </div>
             </div>
@@ -358,6 +381,14 @@ export const App: React.FC = () => {
           }
         }}
         objectiveName={activeNode?.name || ''}
+      />
+
+      <SpotrepModal
+        isOpen={isSpotrepOpen}
+        onClose={() => setIsSpotrepOpen(false)}
+        onSubmitSpotrep={(rep) => {
+          dropMarker(rep);
+        }}
       />
     </div>
   );

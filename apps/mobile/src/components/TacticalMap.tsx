@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
-import { MissionGraph } from '@gridcommand/crdt-core';
+import { MissionGraph, BlueForcePeer, TacticalMarker } from '@gridcommand/crdt-core';
 
 // Register PMTiles protocol handler once
 const protocol = new Protocol();
@@ -13,6 +13,8 @@ export interface TacticalMapProps {
   playerLocation: { lat: number; lon: number };
   playerHeading: number;
   rigPitch?: boolean;
+  peers?: Record<string, BlueForcePeer>;
+  markers?: Record<string, TacticalMarker>;
 }
 
 export const TacticalMap: React.FC<TacticalMapProps> = ({
@@ -21,10 +23,14 @@ export const TacticalMap: React.FC<TacticalMapProps> = ({
   playerLocation,
   playerHeading,
   rigPitch = true,
+  peers = {},
+  markers = {},
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<{ [id: string]: maplibregl.Marker }>({});
+  const peerMarkersRef = useRef<{ [id: string]: maplibregl.Marker }>({});
+  const spotrepMarkersRef = useRef<{ [id: string]: maplibregl.Marker }>({});
   const playerMarkerRef = useRef<maplibregl.Marker | null>(null);
 
   useEffect(() => {
@@ -155,6 +161,112 @@ export const TacticalMap: React.FC<TacticalMapProps> = ({
       }
     });
   }, [graph, activeObjectiveId]);
+
+  // Update Blue Force Tracking (BFT) Teammates
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const map = mapRef.current;
+
+    // Clean up removed peers
+    Object.keys(peerMarkersRef.current).forEach((id) => {
+      if (!peers[id]) {
+        peerMarkersRef.current[id].remove();
+        delete peerMarkersRef.current[id];
+      }
+    });
+
+    // Add or update peer markers
+    Object.values(peers).forEach((peer) => {
+      const isAlpha = peer.squad.toLowerCase().includes('alpha');
+      const squadColor = isAlpha ? '#4e9b4e' : '#c7a76c';
+      const roleBadge = peer.role.substring(0, 3);
+      const headingDeg = peer.heading || 0;
+
+      if (!peerMarkersRef.current[peer.id]) {
+        const el = document.createElement('div');
+        el.className = `tactical-peer-marker peer-${peer.id}`;
+        el.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+            <div style="width: 22px; height: 22px; background: rgba(20, 28, 20, 0.9); border: 2px solid ${squadColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center; transform: rotate(${headingDeg}deg); box-shadow: 0 0 8px ${squadColor};">
+              <div style="width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 7px solid ${squadColor};"></div>
+            </div>
+            <div style="margin-top: 2px; padding: 1px 4px; background: #0b0f0b; border: 1px solid ${squadColor}; border-radius: 3px; font-family: monospace; font-size: 8px; font-weight: bold; color: ${squadColor}; white-space: nowrap;">
+              ${peer.callsign} [${roleBadge}]
+            </div>
+          </div>
+        `;
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([peer.lon, peer.lat])
+          .addTo(map);
+        peerMarkersRef.current[peer.id] = marker;
+      } else {
+        peerMarkersRef.current[peer.id].setLngLat([peer.lon, peer.lat]);
+        const el = peerMarkersRef.current[peer.id].getElement();
+        const iconDiv = el.querySelector('div > div:first-child') as HTMLElement | null;
+        if (iconDiv) {
+          iconDiv.style.transform = `rotate(${headingDeg}deg)`;
+        }
+      }
+    });
+  }, [peers]);
+
+  // Update Field SPOTREP Markers
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const map = mapRef.current;
+
+    // Clean up removed markers
+    Object.keys(spotrepMarkersRef.current).forEach((id) => {
+      if (!markers[id] || !markers[id].active) {
+        spotrepMarkersRef.current[id].remove();
+        delete spotrepMarkersRef.current[id];
+      }
+    });
+
+    // Add or update spotrep markers
+    Object.values(markers).forEach((m) => {
+      if (!m.active) return;
+      const typeIcons: Record<string, string> = {
+        HOSTILE: '🔴',
+        HAZARD: '⚠️',
+        MEDEVAC: '🚑',
+        SUPPLY: '📦',
+        RALLY: '🎯',
+      };
+      const icon = typeIcons[m.type] || '📍';
+      const color =
+        m.type === 'HOSTILE'
+          ? '#c5221f'
+          : m.type === 'HAZARD'
+            ? '#f5b700'
+            : m.type === 'MEDEVAC'
+              ? '#e53e3e'
+              : m.type === 'SUPPLY'
+                ? '#4e9b4e'
+                : '#c7a76c';
+
+      if (!spotrepMarkersRef.current[m.id]) {
+        const el = document.createElement('div');
+        el.className = `tactical-spotrep-marker marker-${m.id}`;
+        el.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer; filter: drop-shadow(0 0 6px rgba(0,0,0,0.9));">
+            <div style="font-size: 16px; line-height: 1; transform: scale(1.1); animation: bounce 1.5s infinite;">
+              ${icon}
+            </div>
+            <div style="margin-top: 1px; padding: 2px 5px; background: rgba(11, 15, 11, 0.95); border: 1px solid ${color}; border-radius: 3px; font-family: monospace; font-size: 8px; font-weight: bold; color: ${color}; white-space: nowrap;">
+              ${m.title}
+            </div>
+          </div>
+        `;
+        const marker = new maplibregl.Marker({ element: el })
+          .setLngLat([m.lon, m.lat])
+          .addTo(map);
+        spotrepMarkersRef.current[m.id] = marker;
+      } else {
+        spotrepMarkersRef.current[m.id].setLngLat([m.lon, m.lat]);
+      }
+    });
+  }, [markers]);
 
   return (
     <div className="relative w-full h-full">

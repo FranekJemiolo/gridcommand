@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import DeckGL from '@deck.gl/react';
-import { ColumnLayer } from '@deck.gl/layers';
+import { ColumnLayer, ScatterplotLayer, TextLayer } from '@deck.gl/layers';
 import maplibregl from 'maplibre-gl';
 import { TacticalHex } from '../stores/gmStore';
+import { BlueForcePeer, TacticalMarker } from '@gridcommand/crdt-core';
 
 export interface TacticalHexMapProps {
   hexes: TacticalHex[];
+  peers?: Record<string, BlueForcePeer>;
+  markers?: Record<string, TacticalMarker>;
   onSelectHex?: (hex: TacticalHex) => void;
 }
 
@@ -18,7 +21,12 @@ const INITIAL_VIEW_STATE = {
   maxPitch: 65,
 };
 
-export const TacticalHexMap: React.FC<TacticalHexMapProps> = ({ hexes, onSelectHex }) => {
+export const TacticalHexMap: React.FC<TacticalHexMapProps> = ({
+  hexes,
+  peers = {},
+  markers = {},
+  onSelectHex,
+}) => {
   const [viewState, setViewState] = useState(INITIAL_VIEW_STATE);
   const [osmMode, setOsmMode] = useState<'standard' | 'tactical'>('standard');
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -139,6 +147,74 @@ export const TacticalHexMap: React.FC<TacticalHexMapProps> = ({ hexes, onSelectH
           onSelectHex(info.object);
         }
       },
+    }),
+
+    // Blue Force Tracking (BFT) Operator Telemetry Nodes
+    new ScatterplotLayer<BlueForcePeer>({
+      id: 'bft-peers-nodes',
+      data: Object.values(peers),
+      getPosition: (d) => [d.lon, d.lat, 220],
+      getFillColor: (d) =>
+        d.squad.toLowerCase().includes('alpha')
+          ? [78, 155, 78, 240] // Alpha Olive
+          : [199, 167, 108, 240], // Bravo Coyote
+      getLineColor: [245, 183, 0, 255],
+      lineWidthMinPixels: 2,
+      stroked: true,
+      radiusMinPixels: 8,
+      radiusMaxPixels: 14,
+    }),
+
+    // BFT Callsign and Battery Labels
+    new TextLayer<BlueForcePeer>({
+      id: 'bft-peers-labels',
+      data: Object.values(peers),
+      getPosition: (d) => [d.lon, d.lat, 240],
+      getText: (d) => `${d.callsign} (${d.battery}%)`,
+      getSize: 11,
+      getColor: [232, 237, 232, 255],
+      getTextAnchor: 'middle',
+      getAlignmentBaseline: 'bottom',
+      fontFamily: 'monospace',
+      fontWeight: 'bold',
+      background: true,
+      getBackgroundColor: [11, 15, 11, 230],
+      backgroundPadding: [4, 2],
+    }),
+
+    // Field SPOTREP Tactical Markers
+    new ScatterplotLayer<TacticalMarker>({
+      id: 'spotrep-markers-nodes',
+      data: Object.values(markers).filter((m) => m.active),
+      getPosition: (d) => [d.lon, d.lat, 210],
+      getFillColor: (d) =>
+        d.type === 'HOSTILE'
+          ? [197, 34, 31, 240] // Hostile Red
+          : d.type === 'HAZARD'
+            ? [245, 183, 0, 240] // Hazard Amber
+            : [104, 211, 145, 240], // Friendly / Supply
+      getLineColor: [255, 255, 255, 240],
+      lineWidthMinPixels: 2,
+      stroked: true,
+      radiusMinPixels: 7,
+      radiusMaxPixels: 12,
+    }),
+
+    // SPOTREP Titles
+    new TextLayer<TacticalMarker>({
+      id: 'spotrep-markers-labels',
+      data: Object.values(markers).filter((m) => m.active),
+      getPosition: (d) => [d.lon, d.lat, 230],
+      getText: (d) => `[${d.type}] ${d.title}`,
+      getSize: 10,
+      getColor: [245, 183, 0, 255],
+      getTextAnchor: 'middle',
+      getAlignmentBaseline: 'bottom',
+      fontFamily: 'monospace',
+      fontWeight: 'bold',
+      background: true,
+      getBackgroundColor: [20, 28, 20, 230],
+      backgroundPadding: [3, 2],
     }),
   ];
 

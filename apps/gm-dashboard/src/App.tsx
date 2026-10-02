@@ -13,6 +13,8 @@ export const App: React.FC = () => {
     globalFreeze,
     graph,
     hexes,
+    peers,
+    markers,
     ticker,
     activeHazard,
     setIsLive,
@@ -80,7 +82,7 @@ export const App: React.FC = () => {
       <div className="flex-1 flex w-full overflow-hidden relative">
         {/* 3D Hex Battle Map */}
         <div className="flex-1 h-full relative">
-          <TacticalHexMap hexes={hexes} />
+          <TacticalHexMap hexes={hexes} peers={peers} markers={markers} />
 
           {/* Active Hazard Countdown Widget */}
           {activeHazard && (
