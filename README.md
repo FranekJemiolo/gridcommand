@@ -1,11 +1,13 @@
 # GridCommand ⚡
 
 [![CI](https://github.com/FranekJemiolo/gridcommand/actions/workflows/ci.yml/badge.svg)](https://github.com/FranekJemiolo/gridcommand/actions/workflows/ci.yml)
-[![Pages](https://github.com/FranekJemiolo/gridcommand/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/FranekJemiolo/gridcommand/actions/workflows/deploy-pages.yml)
+[![Pages](https://github.com/FranekJemiolo/gridcommand/actions/workflows/deploy-pages.yml/badge.svg)](https://franekjemiolo.github.io/gridcommand/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Monorepo: Turborepo](https://img.shields.io/badge/Monorepo-Turborepo-ef4444.svg)](https://turbo.build/)
 [![Package Manager: pnpm](https://img.shields.io/badge/pnpm-9.11.0-orange.svg)](https://pnpm.io/)
 [![Python: uv](https://img.shields.io/badge/Python-Astral%20uv-7c3aed.svg)](https://github.com/astral-sh/uv)
+
+> 🌐 **Live Documentation & Interactive Demo Platform:** [https://franekjemiolo.github.io/gridcommand/](https://franekjemiolo.github.io/gridcommand/)
 
 **GridCommand** is a decentralized, local-first tactical field simulation and command-and-control (C2) platform engineered to coordinate multi-squad tactical simulations, civilian MilSim events, scouting expeditions, and outdoor navigation exercises in strict zero-connectivity environments (dense forests, deep valleys, wetlands, and subterranean structures).
 
