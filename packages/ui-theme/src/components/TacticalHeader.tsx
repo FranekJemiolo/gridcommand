@@ -20,17 +20,17 @@ export const TacticalHeader: React.FC<TacticalHeaderProps> = ({
   onToggleRainLock,
 }) => {
   const getGpsColor = (acc: number) => {
-    if (acc <= 5) return 'text-[#00ff66] border-[#00ff66]/40';
-    if (acc <= 15) return 'text-[#ffe600] border-[#ffe600]/40';
-    return 'text-[#ff2200] border-[#ff2200]/40';
+    if (acc <= 5) return 'text-[#68d391] border-[#4e9b4e]/60 bg-[#1c261c]';
+    if (acc <= 15) return 'text-[#f5b700] border-[#f5b700]/50 bg-[#2b2414]';
+    return 'text-[#fc8181] border-[#c5221f]/60 bg-[#2d1414]';
   };
 
   return (
-    <header className="w-full bg-[#0a0e14] border-b-2 border-[#1e2638] px-3 py-2 text-xs font-mono select-none">
+    <header className="w-full bg-[#141c14] border-b-2 border-[#2e3d2e] px-3 py-2 text-xs font-mono select-none">
       <div className="flex items-center justify-between gap-2 max-w-7xl mx-auto">
         {/* GPS Indicator */}
         <div
-          className={`flex items-center gap-1.5 px-2 py-1 rounded border bg-[#000000]/60 ${getGpsColor(
+          className={`flex items-center gap-1.5 px-2 py-1 rounded border ${getGpsColor(
             gpsAccuracy
           )}`}
         >
@@ -39,12 +39,12 @@ export const TacticalHeader: React.FC<TacticalHeaderProps> = ({
         </div>
 
         {/* Mesh Nodes */}
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded border border-[#00f3ff]/40 bg-[#00f3ff]/5 text-[#00f3ff]">
+        <div className="flex items-center gap-1.5 px-2 py-1 rounded border border-[#a67c52] bg-[#453724]/40 text-[#f5b700]">
           <span className="font-bold">MESH: {meshNodesCount} NODES</span>
         </div>
 
         {/* Battery */}
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded border border-[#8b949e]/40 bg-[#121820] text-[#e6edf3]">
+        <div className="flex items-center gap-1.5 px-2 py-1 rounded border border-[#453724] bg-[#1c261c] text-[#c7a76c]">
           <span>BAT: {batteryPercent}%</span>
         </div>
 

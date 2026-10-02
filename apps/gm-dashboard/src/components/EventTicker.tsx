@@ -9,44 +9,44 @@ export const EventTicker: React.FC<EventTickerProps> = ({ events }) => {
   const getBadgeColor = (type: TickerEvent['type']) => {
     switch (type) {
       case 'CAPT':
-        return 'text-[#00ff66] border-[#00ff66]/40 bg-[#00ff66]/10';
+        return 'text-[#68d391] border-[#4e9b4e]/60 bg-[#4e9b4e]/20';
       case 'OVER':
-        return 'text-[#00f3ff] border-[#00f3ff]/40 bg-[#00f3ff]/10';
+        return 'text-[#f5b700] border-[#f5b700]/60 bg-[#f5b700]/20';
       case 'HAZ':
-        return 'text-[#ffe600] border-[#ffe600]/40 bg-[#ffe600]/10';
+        return 'text-[#e09f3e] border-[#e09f3e]/60 bg-[#e09f3e]/20';
       case 'FREEZE':
-        return 'text-[#ff2200] border-[#ff2200]/40 bg-[#ff2200]/20 font-black';
+        return 'text-[#fc8181] border-[#c5221f]/60 bg-[#c5221f]/20 font-black';
       default:
-        return 'text-[#8b949e] border-[#8b949e]/40';
+        return 'text-[#9ba89b] border-[#453724]';
     }
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#0a0e14] border-l-2 border-[#1e2638] font-mono select-none">
-      <div className="p-3 border-b border-[#1e2638] flex items-center justify-between">
-        <div className="text-xs font-bold text-[#e6edf3] flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#00ff66] animate-pulse" />
+    <div className="w-full h-full flex flex-col bg-[#141c14] border-l-2 border-[#2e3d2e] font-mono select-none">
+      <div className="p-3 border-b border-[#2e3d2e] flex items-center justify-between">
+        <div className="text-xs font-bold text-[#e8ede8] flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#68d391] animate-pulse" />
           EVENT STREAM // CRDT INGRESS
         </div>
-        <div className="text-[10px] text-[#8b949e]">{events.length} EVENTS</div>
+        <div className="text-[10px] text-[#c7a76c]">{events.length} EVENTS</div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 space-y-2">
         {events.map((evt) => (
           <div
             key={evt.id}
-            className="p-2.5 rounded bg-[#121820] border border-[#1e2638] hover:border-[#8b949e]/50 transition-colors text-xs"
+            className="p-2.5 rounded bg-[#1c261c] border border-[#2e3d2e] hover:border-[#a67c52] transition-colors text-xs"
           >
             <div className="flex items-center justify-between mb-1 text-[10px]">
-              <span className="text-[#8b949e]">{evt.timeStr}</span>
+              <span className="text-[#9ba89b]">{evt.timeStr}</span>
               <span className={`px-1.5 py-0.5 rounded border uppercase text-[9px] font-bold ${getBadgeColor(evt.type)}`}>
                 {evt.type}
               </span>
             </div>
-            <div className="text-[#e6edf3] leading-snug">{evt.message}</div>
-            <div className="mt-1 flex items-center justify-between text-[10px] text-[#8b949e]">
+            <div className="text-[#e8ede8] leading-snug">{evt.message}</div>
+            <div className="mt-1 flex items-center justify-between text-[10px] text-[#9ba89b]">
               <span>SQUAD: {evt.squad}</span>
-              {evt.verified && <span className="text-[#00f3ff]">✓ SIG VALID</span>}
+              {evt.verified && <span className="text-[#68d391] font-bold">✓ SIG VALID</span>}
             </div>
           </div>
         ))}

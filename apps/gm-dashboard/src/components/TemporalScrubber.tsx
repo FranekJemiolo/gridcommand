@@ -27,7 +27,7 @@ export const TemporalScrubber: React.FC<TemporalScrubberProps> = ({
     .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
   return (
-    <footer className="w-full bg-[#0a0e14] border-t-2 border-[#1e2638] px-4 py-3 font-mono text-xs select-none">
+    <footer className="w-full bg-[#141c14] border-t-2 border-[#2e3d2e] px-4 py-3 font-mono text-xs select-none">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
         {/* Mode Selector & Play Controls */}
         <div className="flex items-center gap-2">
@@ -35,8 +35,8 @@ export const TemporalScrubber: React.FC<TemporalScrubberProps> = ({
             onClick={() => onToggleLive(!isLive)}
             className={`px-3 py-1.5 rounded font-black text-xs uppercase border transition-all ${
               isLive
-                ? 'bg-[#00ff66]/15 border-[#00ff66] text-[#00ff66] animate-pulse'
-                : 'bg-[#ffe600]/15 border-[#ffe600] text-[#ffe600]'
+                ? 'bg-[#4e9b4e]/20 border-[#4e9b4e] text-[#68d391] animate-pulse'
+                : 'bg-[#f5b700]/20 border-[#f5b700] text-[#f5b700]'
             }`}
           >
             {isLive ? '● LIVE STREAM' : '⏸ DVR REPLAY'}
@@ -56,7 +56,7 @@ export const TemporalScrubber: React.FC<TemporalScrubberProps> = ({
 
         {/* Timeline Slider (Temporal Scrubber) */}
         <div className="flex-1 w-full max-w-2xl flex items-center gap-3">
-          <span className="text-[11px] text-[#8b949e]">14:00:00</span>
+          <span className="text-[11px] text-[#9ba89b]">14:00:00</span>
           <div className="flex-1 relative flex items-center">
             <input
               type="range"
@@ -67,19 +67,19 @@ export const TemporalScrubber: React.FC<TemporalScrubberProps> = ({
                 onToggleLive(false);
                 onScrub(Number(e.target.value));
               }}
-              className="w-full h-2 bg-[#121820] rounded-lg appearance-none cursor-pointer accent-[#00f3ff]"
+              className="w-full h-2 bg-[#1c261c] rounded-lg appearance-none cursor-pointer accent-[#f5b700]"
             />
           </div>
-          <span className="text-[11px] text-[#00f3ff] font-bold">15:30:00</span>
+          <span className="text-[11px] text-[#f5b700] font-bold">15:30:00</span>
         </div>
 
         {/* Time Readout */}
         <div className="flex items-center gap-2">
-          <div className="px-3 py-1 bg-black border border-[#1e2638] rounded text-[#00f3ff] font-bold">
+          <div className="px-3 py-1 bg-[#0b0f0b] border border-[#453724] rounded text-[#f5b700] font-bold">
             PLAYBACK: {timeString}
           </div>
           {isLive && (
-            <span className="text-[10px] text-[#00ff66] font-bold tracking-wider">[IN SYNC]</span>
+            <span className="text-[10px] text-[#68d391] font-bold tracking-wider">[IN SYNC]</span>
           )}
         </div>
       </div>

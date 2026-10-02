@@ -9,11 +9,11 @@ export interface StatusBadgeProps {
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, label }) => {
   const styles = {
-    LOCKED: 'border-[#8b949e]/50 bg-[#121820] text-[#8b949e]',
-    ACTIVE: 'border-[#00f3ff] bg-[#00f3ff]/10 text-[#00f3ff] animate-pulse',
-    RESOLVED: 'border-[#00ff66] bg-[#00ff66]/10 text-[#00ff66]',
-    HAZARD: 'border-[#ff2200] bg-[#ff2200]/20 text-[#ff2200] font-black',
-    HIDDEN: 'border-transparent bg-transparent text-[#8b949e]/40',
+    LOCKED: 'border-[#453724] bg-[#141c14] text-[#9ba89b]',
+    ACTIVE: 'border-[#f5b700] bg-[#f5b700]/15 text-[#f5b700] animate-pulse',
+    RESOLVED: 'border-[#4e9b4e] bg-[#4e9b4e]/20 text-[#68d391]',
+    HAZARD: 'border-[#c5221f] bg-[#c5221f]/20 text-[#fc8181] font-black',
+    HIDDEN: 'border-transparent bg-transparent text-[#9ba89b]/40',
   }[status];
 
   return (

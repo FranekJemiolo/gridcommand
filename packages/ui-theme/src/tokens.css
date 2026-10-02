@@ -1,17 +1,22 @@
 @layer base {
   :root {
-    --tac-bg: #000000;
-    --tac-surface: #0a0e14;
-    --tac-border: #1e2638;
-    --tac-text: #e6edf3;
-    --tac-text-dim: #8b949e;
-    --tac-cyan: #00f3ff;
-    --tac-yellow: #ffe600;
-    --tac-green: #00ff66;
-    --tac-red: #ff2200;
-    --tac-orange: #ff5500;
-    --tac-olive: #4b5320;
-    --tac-blue: #0077ff;
+    --tac-bg: #0b0f0b;
+    --tac-surface: #141c14;
+    --tac-card: #1c261c;
+    --tac-border: #2e3d2e;
+    --tac-border-brown: #453724;
+    --tac-text: #e8ede8;
+    --tac-text-dim: #9ba89b;
+    --tac-green: #4e9b4e;
+    --tac-green-bright: #68d391;
+    --tac-olive: #3b5323;
+    --tac-yellow: #f5b700;
+    --tac-amber: #e09f3e;
+    --tac-brown: #8a6240;
+    --tac-brown-dark: #4a3520;
+    --tac-tan: #c7a76c;
+    --tac-khaki: #b89b72;
+    --tac-red: #c5221f;
   }
 }
 
@@ -50,13 +55,13 @@
 /* Scan Reticle & Radar Animations */
 @keyframes tactical-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(0, 243, 255, 0.6);
+    box-shadow: 0 0 0 0 rgba(245, 183, 0, 0.6);
   }
   70% {
-    box-shadow: 0 0 0 16px rgba(0, 243, 255, 0);
+    box-shadow: 0 0 0 16px rgba(245, 183, 0, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(0, 243, 255, 0);
+    box-shadow: 0 0 0 0 rgba(245, 183, 0, 0);
   }
 }
 

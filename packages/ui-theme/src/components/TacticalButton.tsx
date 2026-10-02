@@ -1,13 +1,13 @@
 import React from 'react';
 
 export interface TacticalButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'cyan' | 'yellow' | 'red' | 'green' | 'neutral';
+  variant?: 'yellow' | 'olive' | 'coyote' | 'green' | 'red' | 'neutral' | 'cyan';
   size?: 'default' | 'large' | 'compact';
   fullWidth?: boolean;
 }
 
 export const TacticalButton: React.FC<TacticalButtonProps> = ({
-  variant = 'cyan',
+  variant = 'yellow',
   size = 'default',
   fullWidth = false,
   className = '',
@@ -15,11 +15,13 @@ export const TacticalButton: React.FC<TacticalButtonProps> = ({
   ...props
 }) => {
   const variantStyles = {
-    cyan: 'bg-[#00f3ff]/10 text-[#00f3ff] border-[#00f3ff] hover:bg-[#00f3ff]/20 active:bg-[#00f3ff]/30',
-    yellow: 'bg-[#ffe600]/10 text-[#ffe600] border-[#ffe600] hover:bg-[#ffe600]/20 active:bg-[#ffe600]/30',
-    red: 'bg-[#ff2200]/10 text-[#ff2200] border-[#ff2200] hover:bg-[#ff2200]/20 active:bg-[#ff2200]/30',
-    green: 'bg-[#00ff66]/10 text-[#00ff66] border-[#00ff66] hover:bg-[#00ff66]/20 active:bg-[#00ff66]/30',
-    neutral: 'bg-[#121820] text-[#e6edf3] border-[#1e2638] hover:border-[#8b949e] active:bg-[#1a2332]',
+    yellow: 'bg-[#f5b700]/15 text-[#f5b700] border-[#f5b700] hover:bg-[#f5b700]/25 active:bg-[#f5b700]/35',
+    olive: 'bg-[#3b5323]/30 text-[#84cc16] border-[#4e6b2f] hover:bg-[#3b5323]/45 active:bg-[#3b5323]/60',
+    coyote: 'bg-[#8a6240]/25 text-[#d4a373] border-[#a67c52] hover:bg-[#8a6240]/40 active:bg-[#8a6240]/50',
+    green: 'bg-[#4e9b4e]/20 text-[#68d391] border-[#4e9b4e] hover:bg-[#4e9b4e]/30 active:bg-[#4e9b4e]/40',
+    red: 'bg-[#c5221f]/20 text-[#fc8181] border-[#c5221f] hover:bg-[#c5221f]/30 active:bg-[#c5221f]/40',
+    cyan: 'bg-[#f5b700]/15 text-[#f5b700] border-[#f5b700] hover:bg-[#f5b700]/25 active:bg-[#f5b700]/35',
+    neutral: 'bg-[#141c14] text-[#e8ede8] border-[#2e3d2e] hover:border-[#9ba89b] active:bg-[#1c261c]',
   }[variant];
 
   const sizeStyles = {

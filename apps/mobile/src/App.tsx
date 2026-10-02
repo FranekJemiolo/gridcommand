@@ -67,7 +67,7 @@ export const App: React.FC = () => {
 
   return (
     <div
-      className={`relative w-full h-full flex flex-col bg-black text-[#e6edf3] overflow-hidden select-none ${
+      className={`relative w-full h-full flex flex-col bg-[#0b0f0b] text-[#e8ede8] overflow-hidden select-none ${
         redMode ? 'tactical-red-mode' : ''
       }`}
     >
@@ -83,7 +83,7 @@ export const App: React.FC = () => {
       />
 
       {/* Sub-Header: Sector & Mode Tabs */}
-      <div className="bg-[#0a0e14] border-b border-[#1e2638] px-3 py-1.5 flex items-center justify-between text-xs font-mono">
+      <div className="bg-[#141c14] border-b border-[#2e3d2e] px-3 py-1.5 flex items-center justify-between text-xs font-mono">
         <div className="flex items-center gap-1.5 overflow-x-auto">
           {(['hud', 'mesh', 'objectives', 'diagnostics'] as const).map((tab) => (
             <button
@@ -91,15 +91,15 @@ export const App: React.FC = () => {
               onClick={() => setActiveTab(tab)}
               className={`px-2.5 py-1 rounded uppercase font-bold text-[10px] tracking-wider transition-all ${
                 activeTab === tab
-                  ? 'bg-[#00f3ff]/20 text-[#00f3ff] border border-[#00f3ff]'
-                  : 'text-[#8b949e] hover:text-[#e6edf3]'
+                  ? 'bg-[#3b5323]/50 text-[#f5b700] border border-[#f5b700]'
+                  : 'text-[#9ba89b] hover:text-[#e8ede8] border border-transparent'
               }`}
             >
               {tab}
             </button>
           ))}
         </div>
-        <div className="text-[10px] text-[#8b949e] hidden sm:block">
+        <div className="text-[10px] text-[#c7a76c] font-bold hidden sm:block">
           GRID: GDAŃSK OLIWA (54.40°N, 18.53°E)
         </div>
       </div>
@@ -140,25 +140,25 @@ export const App: React.FC = () => {
             </div>
 
             {/* Objective Status Bar */}
-            <div className="absolute top-3 left-3 z-20 max-w-[210px] bg-[#0a0e14]/90 p-2.5 rounded border border-[#1e2638] font-mono text-xs backdrop-blur-sm">
-              <div className="text-[10px] text-[#8b949e]">TARGET OBJECTIVE</div>
-              <div className="font-bold text-[#00f3ff] truncate">{activeNode?.name || 'ALL RESOLVED'}</div>
+            <div className="absolute top-3 left-3 z-20 max-w-[210px] bg-[#141c14]/95 p-2.5 rounded border border-[#453724] font-mono text-xs backdrop-blur-sm shadow-xl">
+              <div className="text-[10px] text-[#9ba89b]">TARGET OBJECTIVE</div>
+              <div className="font-bold text-[#f5b700] truncate">{activeNode?.name || 'ALL RESOLVED'}</div>
               <div className="mt-1 flex items-center gap-1.5">
                 <StatusBadge status={activeNode?.status || 'RESOLVED'} />
-                <span className="text-[10px] text-[#ffe600] font-bold">+{activeNode?.points || 0} PTS</span>
+                <span className="text-[10px] text-[#f5b700] font-bold">+{activeNode?.points || 0} PTS</span>
               </div>
             </div>
           </div>
 
           {/* Bottom Rig Controls (60x60px touch zones) */}
-          <div className="relative z-30 bg-[#0a0e14] border-t-2 border-[#1e2638] p-3 font-mono">
+          <div className="relative z-30 bg-[#141c14] border-t-2 border-[#2e3d2e] p-3 font-mono">
             <div className="max-w-md mx-auto flex flex-col gap-2">
-              <div className="flex items-center justify-between text-[11px] text-[#8b949e] px-1">
+              <div className="flex items-center justify-between text-[11px] text-[#9ba89b] px-1">
                 <span>DIST: {Math.round(distanceMeters)}m</span>
                 <span>BEARING: {Math.round(targetBearing).toString().padStart(3, '0')}°</span>
                 <button
                   onClick={simulateStepCloser}
-                  className="text-[#00f3ff] hover:underline uppercase font-bold"
+                  className="text-[#f5b700] hover:underline uppercase font-bold"
                 >
                   [Simulate Step Closer]
                 </button>
@@ -166,7 +166,7 @@ export const App: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2">
                 <TacticalButton
-                  variant="cyan"
+                  variant="olive"
                   className="h-16 text-xs sm:text-sm font-black"
                   onClick={() => setIsScannerOpen(true)}
                 >
@@ -185,11 +185,11 @@ export const App: React.FC = () => {
               <div className="flex items-center justify-between gap-2 pt-1">
                 <button
                   onClick={toggleRigPitch}
-                  className="text-[10px] text-[#8b949e] hover:text-[#e6edf3] border border-[#1e2638] px-2 py-1 rounded"
+                  className="text-[10px] text-[#9ba89b] hover:text-[#e8ede8] border border-[#2e3d2e] px-2 py-1 rounded bg-[#0b0f0b]"
                 >
                   RIG PITCH: {rigPitch ? '45° (CHEST)' : '0° (FLAT)'}
                 </button>
-                <div className="text-[10px] text-[#8b949e]">
+                <div className="text-[10px] text-[#9ba89b]">
                   VOL UP: CONFIRM PIN | VOL DOWN: HUD TOGGLE
                 </div>
               </div>
@@ -200,51 +200,51 @@ export const App: React.FC = () => {
 
       {/* TAB 2: MESH RADAR & COMMS */}
       {activeTab === 'mesh' && (
-        <div className="flex-1 p-4 bg-[#0a0e14] font-mono overflow-y-auto space-y-4">
+        <div className="flex-1 p-4 bg-[#141c14] font-mono overflow-y-auto space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-[#00f3ff]">DECENTRALIZED MESH RADAR</h2>
-              <p className="text-xs text-[#8b949e]">Multi-tier BLE Gossip (30m) & Meshtastic LoRa Bridge (2-5km)</p>
+              <h2 className="text-base font-bold text-[#f5b700]">DECENTRALIZED MESH RADAR</h2>
+              <p className="text-xs text-[#9ba89b]">Multi-tier BLE Gossip (30m) &amp; Meshtastic LoRa Bridge (2-5km)</p>
             </div>
-            <TacticalButton size="compact" variant="cyan" onClick={forceMeshSync}>
+            <TacticalButton size="compact" variant="olive" onClick={forceMeshSync}>
               FORCE SYNC
             </TacticalButton>
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="p-3 rounded bg-black border border-[#1e2638]">
-              <span className="text-[#8b949e]">TOTAL CRDT UPDATES:</span>
-              <div className="text-xl font-bold text-[#00ff66]">{totalUpdatesTransferred}</div>
+            <div className="p-3 rounded bg-[#0b0f0b] border border-[#2e3d2e]">
+              <span className="text-[#9ba89b]">TOTAL CRDT UPDATES:</span>
+              <div className="text-xl font-bold text-[#68d391]">{totalUpdatesTransferred}</div>
             </div>
-            <div className="p-3 rounded bg-black border border-[#1e2638]">
-              <span className="text-[#8b949e]">LORA CARRIER:</span>
-              <div className="text-xl font-bold text-[#ffe600]">868.0 MHz OK</div>
+            <div className="p-3 rounded bg-[#0b0f0b] border border-[#2e3d2e]">
+              <span className="text-[#9ba89b]">LORA CARRIER:</span>
+              <div className="text-xl font-bold text-[#f5b700]">868.0 MHz OK</div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <div className="text-xs font-bold text-[#8b949e]">ACTIVE NEIGHBOR NODES IN PROXIMITY</div>
+            <div className="text-xs font-bold text-[#c7a76c]">ACTIVE NEIGHBOR NODES IN PROXIMITY</div>
             {meshNeighbors.map((n) => (
               <div
                 key={n.id}
-                className="p-3 rounded bg-[#121820] border border-[#1e2638] flex items-center justify-between text-xs"
+                className="p-3 rounded bg-[#1c261c] border border-[#2e3d2e] flex items-center justify-between text-xs"
               >
                 <div>
-                  <div className="font-bold text-[#e6edf3] flex items-center gap-2">
+                  <div className="font-bold text-[#e8ede8] flex items-center gap-2">
                     <span>{n.alias}</span>
-                    <span className="text-[10px] px-1.5 py-0.2 rounded border border-[#00f3ff]/40 text-[#00f3ff]">
+                    <span className="text-[10px] px-1.5 py-0.2 rounded border border-[#a67c52] text-[#d4a373] bg-[#453724]/30">
                       {n.role}
                     </span>
                   </div>
-                  <div className="text-[10px] text-[#8b949e] mt-1">
+                  <div className="text-[10px] text-[#9ba89b] mt-1">
                     SQUAD: {n.squad} | HOPS: {n.hops} | LAST SEEN: {n.lastSeenSec}s AGO
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className={`font-bold ${n.rssi > -70 ? 'text-[#00ff66]' : 'text-[#ffe600]'}`}>
+                  <div className={`font-bold ${n.rssi > -70 ? 'text-[#68d391]' : 'text-[#f5b700]'}`}>
                     {n.rssi} dBm
                   </div>
-                  <div className="text-[10px] text-[#8b949e]">
+                  <div className="text-[10px] text-[#9ba89b]">
                     {n.loraActive ? '● LoRa Bridge' : '○ BLE Only'}
                   </div>
                 </div>
@@ -256,30 +256,30 @@ export const App: React.FC = () => {
 
       {/* TAB 3: OBJECTIVES & DAG PROGRESS */}
       {activeTab === 'objectives' && (
-        <div className="flex-1 p-4 bg-[#0a0e14] font-mono overflow-y-auto space-y-4">
+        <div className="flex-1 p-4 bg-[#141c14] font-mono overflow-y-auto space-y-4">
           <div>
-            <h2 className="text-base font-bold text-[#00f3ff]">MISSION OBJECTIVES DAG</h2>
-            <p className="text-xs text-[#8b949e]">Deterministic client-side state machine</p>
+            <h2 className="text-base font-bold text-[#f5b700]">MISSION OBJECTIVES DAG</h2>
+            <p className="text-xs text-[#9ba89b]">Deterministic client-side state machine</p>
           </div>
 
           <div className="space-y-3">
             {Object.values(graph.nodes).map((node, i) => (
               <div
                 key={node.id}
-                className="p-3.5 rounded bg-[#121820] border border-[#1e2638] text-xs space-y-2"
+                className="p-3.5 rounded bg-[#1c261c] border border-[#2e3d2e] text-xs space-y-2"
               >
                 <div className="flex items-center justify-between">
-                  <div className="font-bold text-[#e6edf3]">
+                  <div className="font-bold text-[#e8ede8]">
                     {i + 1}. {node.name}
                   </div>
                   <StatusBadge status={node.status} />
                 </div>
-                <div className="text-[11px] text-[#8b949e]">
-                  POINTS: <span className="text-[#ffe600] font-bold">+{node.points}</span> | PREREQUISITES:{' '}
+                <div className="text-[11px] text-[#9ba89b]">
+                  POINTS: <span className="text-[#f5b700] font-bold">+{node.points}</span> | PREREQUISITES:{' '}
                   {node.prerequisites.length > 0 ? node.prerequisites.join(', ') : 'NONE (GENESIS)'}
                 </div>
                 {node.owner && (
-                  <div className="text-[11px] text-[#00ff66]">CONTROLLED BY: {node.owner.toUpperCase()}</div>
+                  <div className="text-[11px] text-[#68d391] font-bold">CONTROLLED BY: {node.owner.toUpperCase()}</div>
                 )}
               </div>
             ))}
@@ -289,28 +289,28 @@ export const App: React.FC = () => {
 
       {/* TAB 4: SNEAKERNET & DIAGNOSTICS */}
       {activeTab === 'diagnostics' && (
-        <div className="flex-1 p-4 bg-[#0a0e14] font-mono overflow-y-auto space-y-4 text-xs">
+        <div className="flex-1 p-4 bg-[#141c14] font-mono overflow-y-auto space-y-4 text-xs">
           <div>
-            <h2 className="text-base font-bold text-[#00f3ff]">SNEAKERNET OTG & DIAGNOSTICS</h2>
-            <p className="text-xs text-[#8b949e]">Air-gapped disaster recovery tools</p>
+            <h2 className="text-base font-bold text-[#f5b700]">SNEAKERNET OTG &amp; DIAGNOSTICS</h2>
+            <p className="text-xs text-[#9ba89b]">Air-gapped disaster recovery tools</p>
           </div>
 
-          <div className="p-4 rounded bg-[#121820] border border-[#1e2638] space-y-3">
-            <div className="font-bold text-white">LEVEL 2 EMERGENCY USB-C EXPORT</div>
-            <p className="text-[11px] text-[#8b949e] leading-relaxed">
+          <div className="p-4 rounded bg-[#1c261c] border border-[#453724] space-y-3">
+            <div className="font-bold text-[#f5b700]">LEVEL 2 EMERGENCY USB-C EXPORT</div>
+            <p className="text-[11px] text-[#9ba89b] leading-relaxed">
               If all Bluetooth and LoRa RF layers collapse due to jamming or hardware failures, export the cryptographic Yjs event ledger snapshot to clipboard or USB-C drive for runner physical transport to Basecamp.
             </p>
             <TacticalButton variant="yellow" fullWidth onClick={handleExportSneakernet}>
               EXPORT .GRIDCRDT TO CLIPBOARD
             </TacticalButton>
             {copiedNotification && (
-              <div className="text-[#00ff66] font-bold text-center">
+              <div className="text-[#68d391] font-bold text-center">
                 ✓ .GRIDCRDT JSON EXPORTED SUCCESSFULLY!
               </div>
             )}
           </div>
 
-          <div className="p-4 rounded bg-black border border-[#1e2638] text-[11px] text-[#8b949e] space-y-1">
+          <div className="p-4 rounded bg-[#0b0f0b] border border-[#2e3d2e] text-[11px] text-[#9ba89b] space-y-1">
             <div>DEVICE IDENTIFIER: devAlphaPointman</div>
             <div>LOCAL HLC: {useGameStore.getState().clock.now()}</div>
             <div>COORDINATES: 54.4080°N, 18.5385°E</div>
@@ -321,14 +321,14 @@ export const App: React.FC = () => {
 
       {/* Rain Lock Guard Overlay */}
       {rainLock && (
-        <div className="absolute inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-6 text-center select-none font-mono">
-          <div className="w-20 h-20 rounded-full border-4 border-[#ffe600] flex items-center justify-center text-3xl mb-4 animate-pulse">
+        <div className="absolute inset-0 z-50 bg-[#0b0f0b]/95 flex flex-col items-center justify-center p-6 text-center select-none font-mono">
+          <div className="w-20 h-20 rounded-full border-4 border-[#f5b700] flex items-center justify-center text-3xl mb-4 animate-pulse">
             🔒
           </div>
-          <div className="text-xl font-black text-[#ffe600] tracking-wider mb-2">
+          <div className="text-xl font-black text-[#f5b700] tracking-wider mb-2">
             RAIN LOCK ENGAGED
           </div>
-          <div className="text-xs text-[#8b949e] max-w-xs mb-6">
+          <div className="text-xs text-[#9ba89b] max-w-xs mb-6">
             Capacitive touch disabled to prevent false drops. Use hardware volume buttons to operate.
           </div>
           <TacticalButton

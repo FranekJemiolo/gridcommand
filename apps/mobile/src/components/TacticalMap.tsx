@@ -65,13 +65,13 @@ export const TacticalMap: React.FC<TacticalMapProps> = ({
 
     mapRef.current = map;
 
-    // Player position marker
+    // Player position marker (Military Tactical Amber with Olive Halo)
     const el = document.createElement('div');
     el.className = 'player-marker';
     el.innerHTML = `
-      <div style="width: 28px; height: 28px; background: rgba(0, 243, 255, 0.2); border: 2px solid #00f3ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative;">
-        <div style="width: 8px; height: 8px; background: #00f3ff; border-radius: 50%;"></div>
-        <div style="position: absolute; top: -6px; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 7px solid #00f3ff;"></div>
+      <div style="width: 28px; height: 28px; background: rgba(59, 83, 35, 0.35); border: 2px solid #f5b700; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 0 10px rgba(245, 183, 0, 0.5);">
+        <div style="width: 8px; height: 8px; background: #f5b700; border-radius: 50%;"></div>
+        <div style="position: absolute; top: -6px; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 7px solid #f5b700;"></div>
       </div>
     `;
 
@@ -124,16 +124,16 @@ export const TacticalMap: React.FC<TacticalMapProps> = ({
       const isCurrentActive = node.id === activeObjectiveId;
       const statusColor =
         node.status === 'RESOLVED'
-          ? '#00ff66'
+          ? '#68d391'
           : node.status === 'ACTIVE'
-            ? '#00f3ff'
-            : '#8b949e';
+            ? '#f5b700'
+            : '#8a6240';
 
       if (!markersRef.current[node.id]) {
         const markerEl = document.createElement('div');
         markerEl.className = `tactical-node-marker node-${node.id}`;
         markerEl.innerHTML = `
-          <div style="padding: 4px 8px; background: rgba(10, 14, 20, 0.85); border: 2px solid ${statusColor}; border-radius: 4px; font-family: monospace; font-size: 10px; font-weight: bold; color: ${statusColor}; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 10px rgba(0,0,0,0.8);">
+          <div style="padding: 4px 8px; background: rgba(20, 28, 20, 0.92); border: 2px solid ${statusColor}; border-radius: 4px; font-family: monospace; font-size: 10px; font-weight: bold; color: ${statusColor}; text-transform: uppercase; white-space: nowrap; box-shadow: 0 0 10px rgba(0,0,0,0.85);">
             ${node.name}
           </div>
         `;
@@ -146,8 +146,8 @@ export const TacticalMap: React.FC<TacticalMapProps> = ({
         // Update existing marker element style
         const el = markersRef.current[node.id].getElement();
         el.innerHTML = `
-          <div style="padding: 4px 8px; background: rgba(10, 14, 20, 0.85); border: 2px solid ${statusColor}; border-radius: 4px; font-family: monospace; font-size: 10px; font-weight: bold; color: ${statusColor}; text-transform: uppercase; white-space: nowrap; ${
-            isCurrentActive ? 'box-shadow: 0 0 15px #00f3ff;' : ''
+          <div style="padding: 4px 8px; background: rgba(20, 28, 20, 0.92); border: 2px solid ${statusColor}; border-radius: 4px; font-family: monospace; font-size: 10px; font-weight: bold; color: ${statusColor}; text-transform: uppercase; white-space: nowrap; ${
+            isCurrentActive ? 'box-shadow: 0 0 15px rgba(245, 183, 0, 0.7);' : ''
           }">
             ${node.name} [${node.status}]
           </div>
@@ -159,7 +159,7 @@ export const TacticalMap: React.FC<TacticalMapProps> = ({
   return (
     <div className="relative w-full h-full">
       <div ref={mapContainer} className="w-full h-full" />
-      <div className="absolute bottom-1 right-2 text-[9px] text-[#8b949e] bg-black/60 px-1.5 py-0.5 rounded font-mono pointer-events-none z-10 border border-[#1e2638]">
+      <div className="absolute bottom-1 right-2 text-[9px] text-[#9ba89b] bg-[#141c14]/80 px-1.5 py-0.5 rounded font-mono pointer-events-none z-10 border border-[#2e3d2e]">
         © OpenStreetMap
       </div>
     </div>

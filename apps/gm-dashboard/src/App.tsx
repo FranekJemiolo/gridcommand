@@ -33,28 +33,28 @@ export const App: React.FC = () => {
   });
 
   return (
-    <div className="relative w-full h-full flex flex-col bg-black text-[#e6edf3] overflow-hidden select-none font-mono">
+    <div className="relative w-full h-full flex flex-col bg-[#0b0f0b] text-[#e8ede8] overflow-hidden select-none font-mono">
       {/* Top Bar: Match Identification & Squad Scores */}
-      <header className="w-full bg-[#0a0e14] border-b-2 border-[#1e2638] px-4 py-2 flex items-center justify-between text-xs">
+      <header className="w-full bg-[#141c14] border-b-2 border-[#2e3d2e] px-4 py-2 flex items-center justify-between text-xs">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 font-black text-[#00f3ff] text-sm">
-            <span className="w-2.5 h-2.5 bg-[#00f3ff] rounded-sm" />
+          <div className="flex items-center gap-1.5 font-black text-[#f5b700] text-sm">
+            <span className="w-2.5 h-2.5 bg-[#f5b700] rounded-sm" />
             GRIDCOMMAND // GM COMMAND CENTER
           </div>
-          <span className="text-[#8b949e]">MATCH: {matchId}</span>
-          <span className="text-[10px] px-2 py-0.5 rounded border border-[#00f3ff]/40 bg-[#00f3ff]/10 text-[#00f3ff]">
+          <span className="text-[#c7a76c]">MATCH: {matchId}</span>
+          <span className="text-[10px] px-2 py-0.5 rounded border border-[#4e9b4e] bg-[#4e9b4e]/20 text-[#68d391]">
             DAG STATE: RECONCILED
           </span>
         </div>
 
         {/* Live Scoreboard */}
         <div className="flex items-center gap-4 text-xs font-black">
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-[#0077ff]/10 border border-[#0077ff] text-[#0077ff] rounded">
-            <span>SQUAD ALPHA:</span>
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-[#4e9b4e]/20 border border-[#4e9b4e] text-[#68d391] rounded">
+            <span>SQUAD ALPHA (OLIVE):</span>
             <span>{alphaScore} PTS</span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-[#ff2200]/10 border border-[#ff2200] text-[#ff2200] rounded">
-            <span>SQUAD BRAVO:</span>
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-[#8a6240]/25 border border-[#a67c52] text-[#d4a373] rounded">
+            <span>SQUAD BRAVO (COYOTE):</span>
             <span>{bravoScore} PTS</span>
           </div>
         </div>

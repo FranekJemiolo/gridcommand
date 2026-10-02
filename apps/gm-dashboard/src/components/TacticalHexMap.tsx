@@ -106,15 +106,15 @@ export const TacticalHexMap: React.FC<TacticalHexMapProps> = ({ hexes, onSelectH
   const getColor = (owner: TacticalHex['owner']): [number, number, number, number] => {
     switch (owner) {
       case 'squad_alpha':
-        return [0, 119, 255, 175]; // Alpha Blue (translucent to reveal OSM streets underneath)
+        return [78, 155, 78, 190]; // Squad Alpha: Military Olive Drab / Ranger Green
       case 'squad_bravo':
-        return [255, 34, 0, 175]; // Bravo Red
+        return [199, 167, 108, 190]; // Squad Bravo: Coyote Tan / Khaki Brown
       case 'contested':
-        return [255, 85, 0, 200]; // Flashing Orange
+        return [245, 183, 0, 210]; // Contested: Tactical Amber Yellow
       case 'hazard':
-        return [255, 230, 0, 200]; // Toxic Yellow
+        return [197, 34, 31, 210]; // Hazard: Military Red
       default:
-        return [45, 60, 80, 120]; // Uncontested Slate
+        return [55, 70, 55, 140]; // Uncontested: Field Olive Slate
     }
   };
 
@@ -131,7 +131,7 @@ export const TacticalHexMap: React.FC<TacticalHexMapProps> = ({ hexes, onSelectH
       getPosition: (d) => [d.coordinates[0], d.coordinates[1]],
       getFillColor: (d) => getColor(d.owner),
       getElevation: (d) => d.elevation,
-      getLineColor: [0, 243, 255, 220],
+      getLineColor: [245, 183, 0, 220],
       lineWidthMinPixels: 2,
       stroked: true,
       onClick: (info) => {
@@ -143,7 +143,7 @@ export const TacticalHexMap: React.FC<TacticalHexMapProps> = ({ hexes, onSelectH
   ];
 
   return (
-    <div className="relative w-full h-full bg-[#05080c] overflow-hidden">
+    <div className="relative w-full h-full bg-[#0b0f0b] overflow-hidden">
       {/* MapLibre GL Background Container: renders live OpenStreetMap layout */}
       <div ref={mapContainerRef} className="absolute inset-0 z-0 w-full h-full pointer-events-none" />
 
@@ -160,18 +160,18 @@ export const TacticalHexMap: React.FC<TacticalHexMapProps> = ({ hexes, onSelectH
       </div>
 
       {/* Top Left: OpenStreetMap Layout Toggle */}
-      <div className="absolute top-4 left-4 z-20 bg-[#0a0e14]/90 p-2.5 rounded border border-[#1e2638] font-mono text-xs backdrop-blur-sm flex items-center gap-3">
+      <div className="absolute top-4 left-4 z-20 bg-[#141c14]/95 p-2.5 rounded border border-[#2e3d2e] font-mono text-xs backdrop-blur-sm flex items-center gap-3">
         <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-[#00ff66] animate-pulse" />
-          <span className="text-[#00f3ff] font-bold text-[11px]">BASEMAP: OpenStreetMap</span>
+          <span className="w-2 h-2 rounded-full bg-[#68d391] animate-pulse" />
+          <span className="text-[#f5b700] font-bold text-[11px]">BASEMAP: OpenStreetMap</span>
         </div>
-        <div className="flex items-center gap-1 border-l border-[#1e2638] pl-3">
+        <div className="flex items-center gap-1 border-l border-[#2e3d2e] pl-3">
           <button
             onClick={() => setOsmMode('standard')}
             className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold border transition-colors ${
               osmMode === 'standard'
-                ? 'bg-[#00f3ff] text-black border-[#00f3ff]'
-                : 'text-[#8b949e] border-[#1e2638] hover:text-white'
+                ? 'bg-[#f5b700] text-black border-[#f5b700]'
+                : 'text-[#9ba89b] border-[#2e3d2e] hover:text-white bg-[#0b0f0b]'
             }`}
           >
             OSM Full
@@ -180,8 +180,8 @@ export const TacticalHexMap: React.FC<TacticalHexMapProps> = ({ hexes, onSelectH
             onClick={() => setOsmMode('tactical')}
             className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold border transition-colors ${
               osmMode === 'tactical'
-                ? 'bg-[#00f3ff] text-black border-[#00f3ff]'
-                : 'text-[#8b949e] border-[#1e2638] hover:text-white'
+                ? 'bg-[#f5b700] text-black border-[#f5b700]'
+                : 'text-[#9ba89b] border-[#2e3d2e] hover:text-white bg-[#0b0f0b]'
             }`}
           >
             OSM Tactical
@@ -190,29 +190,29 @@ export const TacticalHexMap: React.FC<TacticalHexMapProps> = ({ hexes, onSelectH
       </div>
 
       {/* Bottom Left: Legend & Attribution */}
-      <div className="absolute bottom-4 left-4 z-20 bg-[#0a0e14]/90 p-3 rounded border border-[#1e2638] font-mono text-xs backdrop-blur-sm pointer-events-none">
-        <div className="text-[10px] text-[#8b949e] font-bold mb-1.5 uppercase tracking-wider">
+      <div className="absolute bottom-4 left-4 z-20 bg-[#141c14]/95 p-3 rounded border border-[#2e3d2e] font-mono text-xs backdrop-blur-sm pointer-events-none">
+        <div className="text-[10px] text-[#c7a76c] font-bold mb-1.5 uppercase tracking-wider">
           HEX BATTLE MAP // OPENSTREETMAP BASE
         </div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[#0077ff]" />
-            <span>SQUAD ALPHA</span>
+            <span className="w-2.5 h-2.5 rounded-sm bg-[#4e9b4e]" />
+            <span className="text-[#e8ede8]">ALPHA (OLIVE)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[#ff2200]" />
-            <span>SQUAD BRAVO</span>
+            <span className="w-2.5 h-2.5 rounded-sm bg-[#c7a76c]" />
+            <span className="text-[#e8ede8]">BRAVO (COYOTE)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[#ff5500] animate-pulse" />
-            <span>CONTESTED</span>
+            <span className="w-2.5 h-2.5 rounded-sm bg-[#f5b700] animate-pulse" />
+            <span className="text-[#e8ede8]">CONTESTED</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[#ffe600]" />
-            <span>HAZARD ZONE</span>
+            <span className="w-2.5 h-2.5 rounded-sm bg-[#c5221f]" />
+            <span className="text-[#e8ede8]">HAZARD ZONE</span>
           </div>
         </div>
-        <div className="mt-2 text-[9px] text-[#8b949e]/80">
+        <div className="mt-2 text-[9px] text-[#9ba89b]/80">
           Map data © OpenStreetMap contributors
         </div>
       </div>

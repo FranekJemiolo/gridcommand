@@ -23,19 +23,19 @@ export const App: React.FC = () => {
   const [demoCaptured, setDemoCaptured] = useState(false);
 
   return (
-    <div className={`min-h-screen bg-[#05080c] text-[#e6edf3] font-sans ${demoRedMode ? 'tactical-red-mode' : ''}`}>
+    <div className={`min-h-screen bg-[#0b0f0b] text-[#e8ede8] font-sans ${demoRedMode ? 'tactical-red-mode' : ''}`}>
       {/* Top Tactical Navigation */}
-      <nav className="sticky top-0 z-50 bg-[#0a0e14]/95 border-b border-[#1e2638] backdrop-blur-md px-4 py-3">
+      <nav className="sticky top-0 z-50 bg-[#141c14]/95 border-b border-[#2e3d2e] backdrop-blur-md px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded bg-[#00f3ff]/10 border border-[#00f3ff] flex items-center justify-center text-[#00f3ff]">
+            <div className="w-8 h-8 rounded bg-[#3b5323]/30 border border-[#4e9b4e] flex items-center justify-center text-[#f5b700]">
               <Shield className="w-5 h-5" />
             </div>
             <div>
-              <span className="font-mono font-black text-sm text-[#00f3ff] tracking-wider">
+              <span className="font-mono font-black text-sm text-[#f5b700] tracking-wider">
                 GRIDCOMMAND
               </span>
-              <span className="hidden sm:inline-block ml-2 text-[10px] font-mono text-[#8b949e] border border-[#1e2638] px-1.5 py-0.5 rounded">
+              <span className="hidden sm:inline-block ml-2 text-[10px] font-mono text-[#c7a76c] border border-[#453724] px-1.5 py-0.5 rounded bg-[#1c261c]">
                 v0.1.0-ALPHA
               </span>
             </div>
@@ -48,8 +48,8 @@ export const App: React.FC = () => {
                 onClick={() => setActiveTab(tab)}
                 className={`px-2.5 py-1.5 rounded uppercase font-bold transition-all ${
                   activeTab === tab
-                    ? 'bg-[#00f3ff]/15 text-[#00f3ff] border border-[#00f3ff]'
-                    : 'text-[#8b949e] hover:text-[#e6edf3]'
+                    ? 'bg-[#3b5323]/50 text-[#f5b700] border border-[#f5b700]'
+                    : 'text-[#9ba89b] hover:text-[#e8ede8]'
                 }`}
               >
                 {tab.replace('-', ' ')}
@@ -60,32 +60,32 @@ export const App: React.FC = () => {
               href="https://github.com/FranekJemiolo/gridcommand"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#121820] border border-[#1e2638] text-xs font-mono hover:border-[#8b949e] transition-colors ml-2"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#1c261c] border border-[#2e3d2e] text-xs font-mono hover:border-[#a67c52] transition-colors ml-2"
             >
-              <Github className="w-4 h-4" />
-              <span className="hidden md:inline">GitHub</span>
+              <Github className="w-4 h-4 text-[#c7a76c]" />
+              <span className="hidden md:inline text-[#e8ede8]">GitHub</span>
             </a>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <header className="relative border-b border-[#1e2638] bg-gradient-to-b from-[#0a0e14] via-[#05080c] to-[#000000] px-4 py-16 sm:py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(#1e2638_1px,transparent_1px)] [background-size:24px_24px] opacity-25 pointer-events-none" />
+      <header className="relative border-b border-[#2e3d2e] bg-gradient-to-b from-[#141c14] via-[#0f150f] to-[#0b0f0b] px-4 py-16 sm:py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(#2e3d2e_1px,transparent_1px)] [background-size:24px_24px] opacity-40 pointer-events-none" />
         <div className="max-w-5xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#00ff66]/30 bg-[#00ff66]/10 text-[#00ff66] font-mono text-xs mb-6">
-            <span className="w-2 h-2 rounded-full bg-[#00ff66] animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#4e9b4e]/50 bg-[#3b5323]/25 text-[#68d391] font-mono text-xs mb-6">
+            <span className="w-2 h-2 rounded-full bg-[#68d391] animate-pulse" />
             ZERO-CONNECTIVITY MILITARY-GRADE STATE MACHINE
           </div>
           <h1 className="text-4xl sm:text-6xl font-black font-mono tracking-tight text-white mb-6">
             Decentralized Tactical Field Simulation Platform
           </h1>
-          <p className="text-base sm:text-xl text-[#8b949e] max-w-3xl mx-auto leading-relaxed mb-8">
+          <p className="text-base sm:text-xl text-[#9ba89b] max-w-3xl mx-auto leading-relaxed mb-8">
             Engineered to coordinate multi-squad tactical operations and civilian MilSim exercises in deep forest canopies, subterranean bunkers, and total cellular blackouts.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 font-mono text-xs">
-            <TacticalButton variant="cyan" onClick={() => setActiveTab('mobile-hud')}>
+            <TacticalButton variant="olive" onClick={() => setActiveTab('mobile-hud')}>
               LAUNCH MOBILE HUD DEMO
             </TacticalButton>
             <TacticalButton variant="yellow" onClick={() => setActiveTab('gm-center')}>
@@ -108,48 +108,48 @@ export const App: React.FC = () => {
                 <h2 className="text-2xl sm:text-3xl font-mono font-black text-white">
                   The Four Architectural Pillars
                 </h2>
-                <p className="text-sm font-mono text-[#8b949e] mt-2">
+                <p className="text-sm font-mono text-[#9ba89b] mt-2">
                   Uncompromising resilience when infrastructure fails
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 font-mono">
-                <div className="p-6 rounded-lg bg-[#0a0e14] border border-[#1e2638] hover:border-[#00f3ff]/50 transition-all">
-                  <div className="w-10 h-10 rounded bg-[#00f3ff]/10 border border-[#00f3ff] flex items-center justify-center text-[#00f3ff] mb-4">
+                <div className="p-6 rounded-lg bg-[#141c14] border border-[#2e3d2e] hover:border-[#4e9b4e] transition-all">
+                  <div className="w-10 h-10 rounded bg-[#3b5323]/30 border border-[#4e9b4e] flex items-center justify-center text-[#68d391] mb-4">
                     <Layers className="w-5 h-5" />
                   </div>
                   <h3 className="text-base font-bold text-white mb-2">1. Local-First Edge CRDT Ledger</h3>
-                  <p className="text-xs text-[#8b949e] leading-relaxed">
+                  <p className="text-xs text-[#9ba89b] leading-relaxed">
                     Every operator device functions as an autonomous sovereign node with an append-only Yjs / pycrdt event log. Clocks are synchronized via Hybrid Logical Clocks (HLC) guaranteeing deterministic convergence with automatic rollbacks.
                   </p>
                 </div>
 
-                <div className="p-6 rounded-lg bg-[#0a0e14] border border-[#1e2638] hover:border-[#ffe600]/50 transition-all">
-                  <div className="w-10 h-10 rounded bg-[#ffe600]/10 border border-[#ffe600] flex items-center justify-center text-[#ffe600] mb-4">
+                <div className="p-6 rounded-lg bg-[#141c14] border border-[#2e3d2e] hover:border-[#f5b700] transition-all">
+                  <div className="w-10 h-10 rounded bg-[#f5b700]/15 border border-[#f5b700] flex items-center justify-center text-[#f5b700] mb-4">
                     <Radio className="w-5 h-5" />
                   </div>
                   <h3 className="text-base font-bold text-white mb-2">2. Multi-Tier Opportunistic Mesh</h3>
-                  <p className="text-xs text-[#8b949e] leading-relaxed">
+                  <p className="text-xs text-[#9ba89b] leading-relaxed">
                     Updates propagate via chunked 122-byte Bluetooth Low Energy (BLE) GATT exchanges between passing operators, Wi-Fi Direct "Data Mules," long-range Meshtastic LoRa radios (2-5km canopy), and physical USB-C OTG flash drives.
                   </p>
                 </div>
 
-                <div className="p-6 rounded-lg bg-[#0a0e14] border border-[#1e2638] hover:border-[#00ff66]/50 transition-all">
-                  <div className="w-10 h-10 rounded bg-[#00ff66]/10 border border-[#00ff66] flex items-center justify-center text-[#00ff66] mb-4">
+                <div className="p-6 rounded-lg bg-[#141c14] border border-[#2e3d2e] hover:border-[#c7a76c] transition-all">
+                  <div className="w-10 h-10 rounded bg-[#8a6240]/25 border border-[#a67c52] flex items-center justify-center text-[#c7a76c] mb-4">
                     <Shield className="w-5 h-5" />
                   </div>
                   <h3 className="text-base font-bold text-white mb-2">3. Cryptographic Proof of Presence</h3>
-                  <p className="text-xs text-[#8b949e] leading-relaxed">
+                  <p className="text-xs text-[#9ba89b] leading-relaxed">
                     Eliminating GPS spoofing and photo-cloning exploits, terrain objectives are verified via dual-layer NTAG215 epoxy discs and Base45 QR codes signed with Game Master Ed25519 private keys and validated against sensor-fusion snapshots.
                   </p>
                 </div>
 
-                <div className="p-6 rounded-lg bg-[#0a0e14] border border-[#1e2638] hover:border-[#ff5500]/50 transition-all">
-                  <div className="w-10 h-10 rounded bg-[#ff5500]/10 border border-[#ff5500] flex items-center justify-center text-[#ff5500] mb-4">
+                <div className="p-6 rounded-lg bg-[#141c14] border border-[#2e3d2e] hover:border-[#e09f3e] transition-all">
+                  <div className="w-10 h-10 rounded bg-[#e09f3e]/20 border border-[#e09f3e] flex items-center justify-center text-[#e09f3e] mb-4">
                     <Cpu className="w-5 h-5" />
                   </div>
                   <h3 className="text-base font-bold text-white mb-2">4. Client-Side DAG State Machine</h3>
-                  <p className="text-xs text-[#8b949e] leading-relaxed">
+                  <p className="text-xs text-[#9ba89b] leading-relaxed">
                     Missions are modeled as Directed Acyclic Graphs (DAGs). Each node folds the chronologically sorted HLC stream over the graph, triggering cascading mission unlocks and hazard quarantines without requiring a centralized server.
                   </p>
                 </div>
@@ -157,24 +157,24 @@ export const App: React.FC = () => {
             </section>
 
             {/* Offline Vector PMTiles Section */}
-            <section className="p-8 rounded-xl bg-gradient-to-r from-[#0a0e14] to-[#121820] border border-[#1e2638] font-mono">
+            <section className="p-8 rounded-xl bg-gradient-to-r from-[#141c14] to-[#1c261c] border border-[#2e3d2e] font-mono">
               <div className="flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="space-y-4 max-w-xl">
-                  <div className="inline-block px-2.5 py-1 rounded bg-[#00f3ff]/10 text-[#00f3ff] text-xs font-bold border border-[#00f3ff]/30">
+                  <div className="inline-block px-2.5 py-1 rounded bg-[#3b5323]/40 text-[#f5b700] text-xs font-bold border border-[#4e9b4e]">
                     SERVERLESS TILE PROTOCOL
                   </div>
                   <h3 className="text-2xl font-bold text-white">
-                    Offline Vector Maps with PMTiles & MapLibre GL
+                    Offline Vector Maps with PMTiles &amp; MapLibre GL
                   </h3>
-                  <p className="text-xs text-[#8b949e] leading-relaxed">
-                    Traditional map libraries fail in forest dead zones because they rely on cloud tile endpoints. GridCommand bundles high-resolution vector terrain, contours, and landmarks into a single-file <code className="text-[#00f3ff]">.pmtiles</code> archive loaded directly from local phone storage via custom HTTP Range handlers.
+                  <p className="text-xs text-[#9ba89b] leading-relaxed">
+                    Traditional map libraries fail in forest dead zones because they rely on cloud tile endpoints. GridCommand bundles high-resolution vector terrain, contours, and landmarks into a single-file <code className="text-[#f5b700]">.pmtiles</code> archive loaded directly from local phone storage via custom HTTP Range handlers.
                   </p>
                 </div>
-                <div className="p-4 rounded bg-black border border-[#1e2638] text-xs text-[#00f3ff] font-mono space-y-1">
+                <div className="p-4 rounded bg-[#0b0f0b] border border-[#453724] text-xs text-[#f5b700] font-mono space-y-1">
                   <div>const protocol = new Protocol();</div>
                   <div>maplibregl.addProtocol('pmtiles', protocol.tile);</div>
-                  <div className="text-[#8b949e] mt-2">// Zero network requests in the woods</div>
-                  <div className="text-[#ffe600]">url: 'pmtiles:///storage/maps/op.pmtiles'</div>
+                  <div className="text-[#9ba89b] mt-2">// Zero network requests in the woods</div>
+                  <div className="text-[#68d391]">url: 'pmtiles:///storage/maps/op.pmtiles'</div>
                 </div>
               </div>
             </section>
@@ -216,12 +216,12 @@ export const App: React.FC = () => {
             </div>
 
             {/* Mobile Device Mockup Frame */}
-            <div className="max-w-md mx-auto rounded-3xl border-4 border-[#1e2638] bg-black p-4 shadow-2xl relative overflow-hidden">
+            <div className="max-w-md mx-auto rounded-3xl border-4 border-[#453724] bg-[#0b0f0b] p-4 shadow-2xl relative overflow-hidden">
               {demoRainLock && (
-                <div className="absolute inset-0 z-40 bg-black/90 flex flex-col items-center justify-center p-6 text-center">
+                <div className="absolute inset-0 z-40 bg-[#0b0f0b]/95 flex flex-col items-center justify-center p-6 text-center">
                   <div className="text-3xl mb-2">🔒</div>
-                  <div className="text-sm font-black text-[#ffe600]">RAIN LOCK ENGAGED</div>
-                  <div className="text-[10px] text-[#8b949e] mt-1 mb-4">
+                  <div className="text-sm font-black text-[#f5b700]">RAIN LOCK ENGAGED</div>
+                  <div className="text-[10px] text-[#9ba89b] mt-1 mb-4">
                     Touch listeners disabled. Operate with hardware buttons.
                   </div>
                   <TacticalButton size="compact" variant="yellow" onClick={() => setDemoRainLock(false)}>
@@ -231,15 +231,15 @@ export const App: React.FC = () => {
               )}
 
               {/* Status Header */}
-              <div className="flex items-center justify-between text-[11px] pb-3 border-b border-[#1e2638]">
-                <span className="text-[#00ff66] font-bold">● GPS: ±2.4m</span>
-                <span className="text-[#00f3ff]">MESH: 4 NODES</span>
-                <span className="text-[#8b949e]">BAT: 92%</span>
+              <div className="flex items-center justify-between text-[11px] pb-3 border-b border-[#2e3d2e]">
+                <span className="text-[#68d391] font-bold">● GPS: ±2.4m</span>
+                <span className="text-[#f5b700]">MESH: 4 NODES</span>
+                <span className="text-[#c7a76c]">BAT: 92%</span>
               </div>
 
               {/* Simulated Map Viewport */}
-              <div className="relative h-64 my-3 rounded-lg bg-[#0a0e14] border border-[#1e2638] flex flex-col items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#00f3ff_1px,transparent_1px)] [background-size:16px_16px]" />
+              <div className="relative h-64 my-3 rounded-lg bg-[#141c14] border border-[#2e3d2e] flex flex-col items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#f5b700_1px,transparent_1px)] [background-size:16px_16px]" />
                 <CompassBearing
                   heading={42}
                   targetBearing={55}
@@ -250,10 +250,10 @@ export const App: React.FC = () => {
 
               {/* Interactive Tactical Controls */}
               <div className="space-y-2">
-                <div className="p-2 rounded bg-[#121820] border border-[#1e2638] flex items-center justify-between text-xs">
+                <div className="p-2 rounded bg-[#1c261c] border border-[#2e3d2e] flex items-center justify-between text-xs">
                   <div>
-                    <span className="text-[#8b949e]">OBJECTIVE: </span>
-                    <span className="text-[#00f3ff] font-bold">
+                    <span className="text-[#9ba89b]">OBJECTIVE: </span>
+                    <span className="text-[#f5b700] font-bold">
                       {demoCaptured ? 'BUNKER 01 [RESOLVED]' : 'BUNKER 01 [ACTIVE]'}
                     </span>
                   </div>
@@ -262,7 +262,7 @@ export const App: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-2">
                   <TacticalButton
-                    variant={demoCaptured ? 'green' : 'cyan'}
+                    variant={demoCaptured ? 'green' : 'olive'}
                     className="h-16 text-xs font-black"
                     onClick={() => setDemoCaptured(!demoCaptured)}
                   >
@@ -287,75 +287,75 @@ export const App: React.FC = () => {
           <div className="space-y-6 font-mono">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
-                <h2 className="text-2xl font-bold text-white">Game Master Command Center & DVR Scrubber</h2>
-                <p className="text-xs text-[#8b949e]">
+                <h2 className="text-2xl font-bold text-white">Game Master Command Center &amp; DVR Scrubber</h2>
+                <p className="text-xs text-[#9ba89b]">
                   Deck.gl Discretized Hexagon tactical view, God-mode overrides, and time-travel replay.
                 </p>
               </div>
             </div>
 
             {/* GM Command Screen Mockup */}
-            <div className="rounded-xl border-2 border-[#1e2638] bg-[#0a0e14] p-4 shadow-2xl">
-              <div className="flex items-center justify-between pb-3 border-b border-[#1e2638] text-xs">
+            <div className="rounded-xl border-2 border-[#2e3d2e] bg-[#141c14] p-4 shadow-2xl">
+              <div className="flex items-center justify-between pb-3 border-b border-[#2e3d2e] text-xs">
                 <div className="flex items-center gap-3">
-                  <span className="text-[#00f3ff] font-black">GM CONSOLE // LIVE</span>
-                  <span className="text-[#8b949e]">MATCH: GDANSK_ALPHA_2026</span>
+                  <span className="text-[#f5b700] font-black">GM CONSOLE // LIVE</span>
+                  <span className="text-[#c7a76c]">MATCH: GDANSK_ALPHA_2026</span>
                 </div>
                 <div className="flex items-center gap-3 font-bold">
-                  <span className="text-[#0077ff]">ALPHA: 250 PTS</span>
-                  <span className="text-[#ff2200]">BRAVO: 100 PTS</span>
+                  <span className="text-[#68d391]">ALPHA: 250 PTS</span>
+                  <span className="text-[#d4a373]">BRAVO: 100 PTS</span>
                 </div>
               </div>
 
               {/* Grid representation */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 my-4">
-                <div className="lg:col-span-2 h-72 rounded bg-black border border-[#1e2638] p-4 flex flex-col justify-between relative overflow-hidden">
-                  <div className="text-xs text-[#8b949e] font-bold">DISCRETIZED TACTICAL HEX BATTLE MAP (DECK.GL)</div>
+                <div className="lg:col-span-2 h-72 rounded bg-[#0b0f0b] border border-[#2e3d2e] p-4 flex flex-col justify-between relative overflow-hidden">
+                  <div className="text-xs text-[#c7a76c] font-bold">DISCRETIZED TACTICAL HEX BATTLE MAP (DECK.GL)</div>
                   
                   {/* Hexagon visualizer */}
                   <div className="grid grid-cols-4 gap-2 text-center text-[10px] font-black py-4">
-                    <div className="p-3 rounded border border-[#0077ff] bg-[#0077ff]/20 text-[#0077ff]">
+                    <div className="p-3 rounded border border-[#4e9b4e] bg-[#4e9b4e]/20 text-[#68d391]">
                       HEX A1<br />SQUAD ALPHA
                     </div>
-                    <div className="p-3 rounded border border-[#00ff66] bg-[#00ff66]/20 text-[#00ff66]">
+                    <div className="p-3 rounded border border-[#68d391] bg-[#68d391]/20 text-[#68d391]">
                       BUNKER 01<br />CAPTURED
                     </div>
-                    <div className="p-3 rounded border border-[#ff5500] bg-[#ff5500]/20 text-[#ff5500] animate-pulse">
+                    <div className="p-3 rounded border border-[#f5b700] bg-[#f5b700]/20 text-[#f5b700] animate-pulse">
                       HEX B2<br />CONTESTED
                     </div>
-                    <div className="p-3 rounded border border-[#ff2200] bg-[#ff2200]/20 text-[#ff2200]">
+                    <div className="p-3 rounded border border-[#a67c52] bg-[#8a6240]/25 text-[#d4a373]">
                       HEX C1<br />SQUAD BRAVO
                     </div>
                   </div>
 
-                  <div className="text-[11px] text-[#00ff66]">● 15 Edge nodes synchronized over BLE / LoRa mesh</div>
+                  <div className="text-[11px] text-[#68d391]">● 15 Edge nodes synchronized over BLE / LoRa mesh</div>
                 </div>
 
                 {/* Event Ticker */}
-                <div className="h-72 rounded bg-black border border-[#1e2638] p-3 overflow-y-auto space-y-2 text-xs">
-                  <div className="text-[#8b949e] font-bold pb-1 border-b border-[#1e2638]">CRDT INGRESS STREAM</div>
-                  <div className="p-2 rounded bg-[#121820] border border-[#1e2638]">
-                    <span className="text-[10px] text-[#8b949e]">14:12:05</span>
-                    <div className="text-[#00ff66] font-bold">Bunker 01 captured by Squad Alpha</div>
+                <div className="h-72 rounded bg-[#0b0f0b] border border-[#2e3d2e] p-3 overflow-y-auto space-y-2 text-xs">
+                  <div className="text-[#c7a76c] font-bold pb-1 border-b border-[#2e3d2e]">CRDT INGRESS STREAM</div>
+                  <div className="p-2 rounded bg-[#1c261c] border border-[#2e3d2e]">
+                    <span className="text-[10px] text-[#9ba89b]">14:12:05</span>
+                    <div className="text-[#68d391] font-bold">Bunker 01 captured by Squad Alpha</div>
                   </div>
-                  <div className="p-2 rounded bg-[#121820] border border-[#1e2638]">
-                    <span className="text-[10px] text-[#8b949e]">14:10:22</span>
-                    <div className="text-[#00f3ff]">Geofence breached (±2.8m GPS lock)</div>
+                  <div className="p-2 rounded bg-[#1c261c] border border-[#2e3d2e]">
+                    <span className="text-[10px] text-[#9ba89b]">14:10:22</span>
+                    <div className="text-[#f5b700]">Geofence breached (±2.8m GPS lock)</div>
                   </div>
-                  <div className="p-2 rounded bg-[#121820] border border-[#1e2638]">
-                    <span className="text-[10px] text-[#8b949e]">14:00:00</span>
-                    <div className="text-[#8b949e]">Simulation Genesis HLC Registered</div>
+                  <div className="p-2 rounded bg-[#1c261c] border border-[#2e3d2e]">
+                    <span className="text-[10px] text-[#9ba89b]">14:00:00</span>
+                    <div className="text-[#9ba89b]">Simulation Genesis HLC Registered</div>
                   </div>
                 </div>
               </div>
 
               {/* Scrubber Bar */}
-              <div className="pt-3 border-t border-[#1e2638] flex items-center justify-between text-xs text-[#8b949e]">
+              <div className="pt-3 border-t border-[#2e3d2e] flex items-center justify-between text-xs text-[#9ba89b]">
                 <span>14:00:00</span>
-                <div className="flex-1 mx-4 h-2 bg-[#121820] rounded-full relative">
-                  <div className="w-3/4 h-full bg-[#00f3ff] rounded-full" />
+                <div className="flex-1 mx-4 h-2 bg-[#1c261c] rounded-full relative">
+                  <div className="w-3/4 h-full bg-[#f5b700] rounded-full" />
                 </div>
-                <span className="text-[#00f3ff] font-bold">14:45:00 [LIVE]</span>
+                <span className="text-[#f5b700] font-bold">14:45:00 [LIVE]</span>
               </div>
             </div>
           </div>
@@ -365,44 +365,44 @@ export const App: React.FC = () => {
         {activeTab === 'mesh-sim' && (
           <div className="space-y-6 font-mono">
             <h2 className="text-2xl font-bold text-white">Decentralized Mesh Topology Visualizer</h2>
-            <p className="text-xs text-[#8b949e]">
+            <p className="text-xs text-[#9ba89b]">
               How updates propagate without internet access using opportunistic multi-hop gossip and radio bridges.
             </p>
 
-            <div className="p-8 rounded-xl border border-[#1e2638] bg-[#0a0e14] space-y-8">
+            <div className="p-8 rounded-xl border border-[#2e3d2e] bg-[#141c14] space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
-                <div className="p-4 rounded-lg bg-[#121820] border border-[#00f3ff]/50">
-                  <div className="text-xs text-[#8b949e]">NODE 1</div>
-                  <div className="text-sm font-bold text-[#00f3ff] mt-1">Pointman (Offline)</div>
-                  <div className="text-[10px] text-[#8b949e] mt-2">Captures NFC Tag</div>
-                  <div className="mt-3 text-xs text-[#00ff66]">HLC Event Committed</div>
+                <div className="p-4 rounded-lg bg-[#1c261c] border border-[#4e9b4e]/60">
+                  <div className="text-xs text-[#9ba89b]">NODE 1</div>
+                  <div className="text-sm font-bold text-[#68d391] mt-1">Pointman (Offline)</div>
+                  <div className="text-[10px] text-[#9ba89b] mt-2">Captures NFC Tag</div>
+                  <div className="mt-3 text-xs text-[#68d391]">HLC Event Committed</div>
                 </div>
 
-                <div className="p-4 rounded-lg bg-[#121820] border border-[#ffe600]/50">
-                  <div className="text-xs text-[#8b949e]">HOP 1 (BLE 30m)</div>
-                  <div className="text-sm font-bold text-[#ffe600] mt-1">Squad Leader</div>
-                  <div className="text-[10px] text-[#8b949e] mt-2">122-Byte BLE Frames</div>
-                  <div className="mt-3 text-xs text-[#00ff66]">Local Yjs Merged</div>
+                <div className="p-4 rounded-lg bg-[#1c261c] border border-[#f5b700]/60">
+                  <div className="text-xs text-[#9ba89b]">HOP 1 (BLE 30m)</div>
+                  <div className="text-sm font-bold text-[#f5b700] mt-1">Squad Leader</div>
+                  <div className="text-[10px] text-[#9ba89b] mt-2">122-Byte BLE Frames</div>
+                  <div className="mt-3 text-xs text-[#68d391]">Local Yjs Merged</div>
                 </div>
 
-                <div className="p-4 rounded-lg bg-[#121820] border border-[#ff5500]/50">
-                  <div className="text-xs text-[#8b949e]">HOP 2 (LORA 2-5km)</div>
-                  <div className="text-sm font-bold text-[#ff5500] mt-1">Data Mule / Radio</div>
-                  <div className="text-[10px] text-[#8b949e] mt-2">LilyGO T-Echo SX1262</div>
-                  <div className="mt-3 text-xs text-[#00ff66]">237-Byte LoRa MTU</div>
+                <div className="p-4 rounded-lg bg-[#1c261c] border border-[#a67c52]">
+                  <div className="text-xs text-[#9ba89b]">HOP 2 (LORA 2-5km)</div>
+                  <div className="text-sm font-bold text-[#d4a373] mt-1">Data Mule / Radio</div>
+                  <div className="text-[10px] text-[#9ba89b] mt-2">LilyGO T-Echo SX1262</div>
+                  <div className="mt-3 text-xs text-[#68d391]">237-Byte LoRa MTU</div>
                 </div>
 
-                <div className="p-4 rounded-lg bg-[#121820] border border-[#00ff66]/50">
-                  <div className="text-xs text-[#8b949e]">DESTINATION</div>
-                  <div className="text-sm font-bold text-[#00ff66] mt-1">Basecamp Server</div>
-                  <div className="text-[10px] text-[#8b949e] mt-2">FastAPI + pycrdt</div>
-                  <div className="mt-3 text-xs text-[#00ff66]">Deck.gl Map Updated</div>
+                <div className="p-4 rounded-lg bg-[#1c261c] border border-[#4e9b4e]">
+                  <div className="text-xs text-[#9ba89b]">DESTINATION</div>
+                  <div className="text-sm font-bold text-[#68d391] mt-1">Basecamp Server</div>
+                  <div className="text-[10px] text-[#9ba89b] mt-2">FastAPI + pycrdt</div>
+                  <div className="mt-3 text-xs text-[#68d391]">Deck.gl Map Updated</div>
                 </div>
               </div>
 
-              <div className="p-4 rounded bg-black border border-[#1e2638] text-xs space-y-2">
-                <div className="text-[#ffe600] font-bold">AUTOMATIC SPLIT-BRAIN CONVERGENCE:</div>
-                <p className="text-[#8b949e] text-[11px] leading-relaxed">
+              <div className="p-4 rounded bg-[#0b0f0b] border border-[#453724] text-xs space-y-2">
+                <div className="text-[#f5b700] font-bold">AUTOMATIC SPLIT-BRAIN CONVERGENCE:</div>
+                <p className="text-[#9ba89b] text-[11px] leading-relaxed">
                   If two squads operate in disconnected valleys for 2 hours and capture conflicting objectives, upon reuniting at Basecamp or crossing paths with a Data Mule, the pure client-side DAG reducer sorts all events lexicographically by HLC string, executing deterministic rollbacks and resolving the exact historical winner with mathematical precision.
                 </p>
               </div>
@@ -414,13 +414,13 @@ export const App: React.FC = () => {
         {activeTab === 'bom' && (
           <div className="space-y-6 font-mono">
             <h2 className="text-2xl font-bold text-white">Physical Hardware Bill of Materials (BOM)</h2>
-            <p className="text-xs text-[#8b949e]">
+            <p className="text-xs text-[#9ba89b]">
               Field-proven procurement specification for a 15-operator (3-squad) Alpha tactical deployment.
             </p>
 
-            <div className="overflow-x-auto rounded-lg border border-[#1e2638]">
+            <div className="overflow-x-auto rounded-lg border border-[#2e3d2e]">
               <table className="w-full text-left text-xs border-collapse">
-                <thead className="bg-[#0a0e14] text-[#8b949e] border-b border-[#1e2638]">
+                <thead className="bg-[#141c14] text-[#c7a76c] border-b border-[#2e3d2e]">
                   <tr>
                     <th className="p-3">Category</th>
                     <th className="p-3">Specification</th>
@@ -430,59 +430,59 @@ export const App: React.FC = () => {
                     <th className="p-3">Field Justification</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1e2638] bg-black">
+                <tbody className="divide-y divide-[#2e3d2e] bg-[#0b0f0b]">
                   <tr>
-                    <td className="p-3 font-bold text-[#00f3ff]">Objective Tokens</td>
+                    <td className="p-3 font-bold text-[#f5b700]">Objective Tokens</td>
                     <td className="p-3">NTAG215 Anti-Metal 30mm Epoxy Disc</td>
                     <td className="p-3">20</td>
                     <td className="p-3">$0.85</td>
-                    <td className="p-3 text-[#00ff66]">$17.00</td>
-                    <td className="p-3 text-[#8b949e]">100% waterproof; scans on metal poles or trees.</td>
+                    <td className="p-3 text-[#68d391]">$17.00</td>
+                    <td className="p-3 text-[#9ba89b]">100% waterproof; scans on metal poles or trees.</td>
                   </tr>
                   <tr>
-                    <td className="p-3 font-bold text-[#00f3ff]">Objective Backup</td>
+                    <td className="p-3 font-bold text-[#f5b700]">Objective Backup</td>
                     <td className="p-3">Rite in the Rain Poly Laser Paper</td>
                     <td className="p-3">1 Pack</td>
                     <td className="p-3">$18.00</td>
-                    <td className="p-3 text-[#00ff66]">$18.00</td>
-                    <td className="p-3 text-[#8b949e]">Laser-printed QR codes; zero ink bleed in pouring rain.</td>
+                    <td className="p-3 text-[#68d391]">$18.00</td>
+                    <td className="p-3 text-[#9ba89b]">Laser-printed QR codes; zero ink bleed in pouring rain.</td>
                   </tr>
                   <tr>
-                    <td className="p-3 font-bold text-[#ffe600]">Operator Power</td>
+                    <td className="p-3 font-bold text-[#d4a373]">Operator Power</td>
                     <td className="p-3">Nitecore NB10000 Gen 2 (10,000mAh)</td>
                     <td className="p-3">15</td>
                     <td className="p-3">$59.95</td>
-                    <td className="p-3 text-[#00ff66]">$899.25</td>
-                    <td className="p-3 text-[#8b949e]">150g ultralight; sustains GPS & WebGL for 8+ hours.</td>
+                    <td className="p-3 text-[#68d391]">$899.25</td>
+                    <td className="p-3 text-[#9ba89b]">150g ultralight; sustains GPS &amp; WebGL for 8+ hours.</td>
                   </tr>
                   <tr>
-                    <td className="p-3 font-bold text-[#ffe600]">Rig Mounts</td>
+                    <td className="p-3 font-bold text-[#d4a373]">Rig Mounts</td>
                     <td className="p-3">MOLLE Flip-Down Phone Board (45°)</td>
                     <td className="p-3">15</td>
                     <td className="p-3">$14.50</td>
-                    <td className="p-3 text-[#00ff66]">$217.50</td>
-                    <td className="p-3 text-[#8b949e]">Hands-free chest angle for Rig Mode glanceable HUD.</td>
+                    <td className="p-3 text-[#68d391]">$217.50</td>
+                    <td className="p-3 text-[#9ba89b]">Hands-free chest angle for Rig Mode glanceable HUD.</td>
                   </tr>
                   <tr>
-                    <td className="p-3 font-bold text-[#ff5500]">LoRa Mesh Bridge</td>
+                    <td className="p-3 font-bold text-[#e09f3e]">LoRa Mesh Bridge</td>
                     <td className="p-3">LilyGO T-Echo SX1262 868MHz Radio</td>
                     <td className="p-3">3</td>
                     <td className="p-3">$45.00</td>
-                    <td className="p-3 text-[#00ff66]">$135.00</td>
-                    <td className="p-3 text-[#8b949e]">Squad Comms; transmits DAG changes across 2-5km canopy.</td>
+                    <td className="p-3 text-[#68d391]">$135.00</td>
+                    <td className="p-3 text-[#9ba89b]">Squad Comms; transmits DAG changes across 2-5km canopy.</td>
                   </tr>
                   <tr>
-                    <td className="p-3 font-bold text-[#8b949e]">Basecamp Router</td>
+                    <td className="p-3 font-bold text-[#c7a76c]">Basecamp Router</td>
                     <td className="p-3">GL.iNet GL-AXT1800 Slate AX Wi-Fi 6</td>
                     <td className="p-3">1</td>
                     <td className="p-3">$129.00</td>
-                    <td className="p-3 text-[#00ff66]">$129.00</td>
-                    <td className="p-3 text-[#8b949e]">5V USB-C powered high-speed onboarding bubble.</td>
+                    <td className="p-3 text-[#68d391]">$129.00</td>
+                    <td className="p-3 text-[#9ba89b]">5V USB-C powered high-speed onboarding bubble.</td>
                   </tr>
-                  <tr className="bg-[#0a0e14] font-black">
-                    <td className="p-3 text-white" colSpan={4}>TOTAL BOM INFRASTRUCTURE COST</td>
-                    <td className="p-3 text-[#00ff66] text-sm">$1,556.58</td>
-                    <td className="p-3 text-[#8b949e]">Complete 15-operator turn-key deployment.</td>
+                  <tr className="bg-[#141c14] font-black">
+                    <td className="p-3 text-[#e8ede8]" colSpan={4}>TOTAL BOM INFRASTRUCTURE COST</td>
+                    <td className="p-3 text-[#68d391] text-sm">$1,556.58</td>
+                    <td className="p-3 text-[#9ba89b]">Complete 15-operator turn-key deployment.</td>
                   </tr>
                 </tbody>
               </table>
@@ -492,17 +492,17 @@ export const App: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-[#1e2638] bg-[#0a0e14] px-4 py-8 font-mono text-xs text-[#8b949e]">
+      <footer className="border-t border-[#2e3d2e] bg-[#141c14] px-4 py-8 font-mono text-xs text-[#9ba89b]">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
-            <span className="text-[#00f3ff] font-bold">GridCommand Tactical Operations</span> — Open Architecture for Decentralized MilSim & Field Simulations.
+            <span className="text-[#f5b700] font-bold">GridCommand Tactical Operations</span> — Open Architecture for Decentralized MilSim &amp; Field Simulations.
           </div>
           <div className="flex items-center gap-4">
-            <a href="https://github.com/FranekJemiolo/gridcommand" className="hover:text-white transition-colors">
+            <a href="https://github.com/FranekJemiolo/gridcommand" className="hover:text-[#f5b700] transition-colors">
               GitHub Repository
             </a>
             <span>•</span>
-            <span>MIT License</span>
+            <span className="text-[#c7a76c]">MIT License</span>
           </div>
         </div>
       </footer>
