@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { HLC } from '../src/hlc';
 import { chunkPayload, BLEChunkAssembler } from '../src/bleChunker';
 import { reduceGameState, reducePeers, reduceTacticalMarkers } from '../src/reducer';
-import { MissionGraph, CRDTEventValue } from '../src/types';
+import { MissionGraph, CRDTEventValue, BlueForcePeer, TacticalMarker } from '../src/types';
 import { latLonToMGRS, latLonToUTM } from '../src/mgrs';
 import { computeElevationProfile, getTerrainElevation } from '../src/elevationProfile';
 import { OfflineMapStorageManager } from '../src/offlineMapManager';
@@ -43,6 +43,28 @@ import {
   degreesToCardinal,
   degreesToClockPosition,
 } from '../src/sensorFusion';
+import {
+  peerToCoTEvent,
+  markerToCoTEvent,
+  objectiveToCoTEvent,
+  exportBattlespaceToCoT,
+  parseCoTEvent,
+  roleToCoTType,
+} from '../src/cotGateway';
+import {
+  computeWeatherState,
+  calculateSmokeDispersion,
+  evaluateEWInterference,
+} from '../src/tacticalEnvironment';
+import {
+  tickOpforSimulation,
+  generateProceduralScenario,
+} from '../src/opforSimulation';
+import {
+  createQuickShoutFrame,
+  parseVoiceBurstFrame,
+  QUICK_SHOUT_DEFINITIONS,
+} from '../src/voiceBurst';
 import { generateKeyPair, toHexString } from '@gridcommand/crypto';
 
 describe('Hybrid Logical Clock (HLC)', () => {
@@ -1036,6 +1058,221 @@ describe('Milestone 5: Sensor-Fusion Rig Calibration & Digital Compass', () => {
     expect(degreesToClockPosition(90)).toBe(3);
     expect(degreesToClockPosition(180)).toBe(6);
     expect(degreesToClockPosition(270)).toBe(9);
+  });
+});
+
+describe('Version 2.0: Defense Interoperability (ATAK Cursor-on-Target CoT)', () => {
+  it('serializes BlueForce peers to MIL-STD-2525 CoT XML events', () => {
+    const peer: BlueForcePeer = {
+      id: 'op_alpha_medic',
+      callsign: 'Doc-1',
+      squad: 'squad_alpha',
+      role: 'MEDIC',
+      lat: 54.4095,
+      lon: 18.541,
+      alt: 118,
+      battery: 88,
+      status: 'ACTIVE',
+      hlc: '2026-10-02T12:00:00.000Z-0000-dev',
+      updatedAt: Date.now(),
+    };
+
+    const xml = peerToCoTEvent(peer);
+    expect(xml).toContain('uid="GRIDCOMMAND-op_alpha_medic"');
+    expect(xml).toContain('type="a-f-G-U-C-M"'); // Medical
+    expect(xml).toContain('callsign="Doc-1"');
+    expect(xml).toContain('battery="88"');
+    expect(xml).toContain('lat="54.409500"');
+    expect(xml).toContain('lon="18.541000"');
+  });
+
+  it('serializes tactical markers and objectives to CoT XML and roundtrips parsing', () => {
+    const marker: TacticalMarker = {
+      id: 'marker_spotrep_1',
+      type: 'HOSTILE',
+      title: 'Hostile Scout Patrol',
+      notes: '2x armed scouts moving south on ridge',
+      lat: 54.415,
+      lon: 18.532,
+      squad: 'squad_alpha',
+      reportedBy: 'Viper-1',
+      hlc: '2026-10-02T12:01:00.000Z-0000-dev',
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 600000,
+      active: true,
+    };
+
+    const xml = markerToCoTEvent(marker);
+    expect(xml).toContain('type="a-h-G"'); // Hostile Ground Contact
+    expect(xml).toContain('Hostile Scout Patrol');
+
+    const parsed = parseCoTEvent(xml);
+    expect(parsed).not.toBeNull();
+    expect(parsed?.uid).toBe('SPOTREP-marker_spotrep_1');
+    expect(parsed?.point.lat).toBeCloseTo(54.415, 4);
+    expect(parsed?.point.lon).toBeCloseTo(18.532, 4);
+    expect(parsed?.callsign).toBe('Hostile Scout Patrol');
+  });
+
+  it('exports entire battlespace to multi-event CoT stream', () => {
+    const peers: BlueForcePeer[] = [
+      {
+        id: 'peer_1',
+        callsign: 'Leader-1',
+        squad: 'squad_alpha',
+        role: 'LEADER',
+        lat: 54.402,
+        lon: 18.542,
+        battery: 95,
+        status: 'ACTIVE',
+        hlc: 't1',
+        updatedAt: Date.now(),
+      },
+    ];
+
+    const stream = exportBattlespaceToCoT({ peers });
+    expect(stream).toContain('<event version="2.0"');
+    expect(stream).toContain('Leader-1');
+  });
+});
+
+describe('Version 2.0: Tactical Environment & Electronic Warfare (EW)', () => {
+  it('computes weather conditions and realistic infantry speed penalties', () => {
+    const clearWeather = computeWeatherState('CLEAR');
+    expect(clearWeather.movementSpeedModifier).toBe(1.0);
+    expect(clearWeather.rfWetCanopyExtraLossDbPerMeter).toBe(0.0);
+
+    const rainWeather = computeWeatherState('RAIN');
+    expect(rainWeather.movementSpeedModifier).toBe(0.8);
+    expect(rainWeather.precipitationMmPerHour).toBeGreaterThan(5);
+
+    const heavyRain = computeWeatherState('HEAVY_RAIN');
+    expect(heavyRain.movementSpeedModifier).toBe(0.65);
+    expect(heavyRain.visibilityMeters).toBeLessThan(1000);
+  });
+
+  it('evaluates EW jamming zone interference on RF packet loss and GPS accuracy', () => {
+    const jammingZones = [
+      {
+        id: 'ew_jammer_1',
+        name: 'Krasukha-4 Jammer Node',
+        centerLat: 54.41,
+        centerLon: 18.54,
+        radiusMeters: 300,
+        band: 'BROADBAND' as const,
+        powerDbm: 30,
+        active: true,
+      },
+    ];
+
+    // Inside jamming zone (50m from center)
+    const inside = evaluateEWInterference(54.4103, 18.5404, jammingZones, 'LORA_868', 2.5);
+    expect(inside.isJammed).toBe(true);
+    expect(inside.packetLossRate).toBeGreaterThan(0.5);
+    expect(inside.effectiveGpsErrorMeters).toBeGreaterThan(20);
+
+    // Outside jamming zone (1500m away)
+    const outside = evaluateEWInterference(54.425, 18.55, jammingZones, 'LORA_868', 2.5);
+    expect(outside.isJammed).toBe(false);
+    expect(outside.packetLossRate).toBe(0);
+    expect(outside.effectiveGpsErrorMeters).toBe(2.5);
+  });
+
+  it('calculates smoke screen dispersion with wind drift vectors', () => {
+    const now = Date.now();
+    const smoke = {
+      id: 'smoke_1',
+      sourceLat: 54.405,
+      sourceLon: 18.535,
+      deployedAt: now - 30000, // 30s ago
+      durationSeconds: 120,
+      initialRadiusMeters: 20,
+      maxRadiusMeters: 80,
+    };
+
+    // Wind blowing from 180° (South) at 5 m/s -> smoke drifts North
+    const dispersion = calculateSmokeDispersion(smoke, 5.0, 180, now);
+    expect(dispersion.active).toBe(true);
+    expect(dispersion.radiusMeters).toBeGreaterThan(20);
+    expect(dispersion.radiusMeters).toBeLessThan(80);
+    // Smoke centroid should drift North (lat increased)
+    expect(dispersion.currentLat).toBeGreaterThan(smoke.sourceLat);
+  });
+});
+
+describe('Version 2.0: Autonomous OPFOR Bots & Procedural Scenarios', () => {
+  it('ticks OPFOR bots along waypoints and detects Blue Force contact', () => {
+    const bot = {
+      id: 'bot_red_1',
+      callsign: 'Red-Sentry-1',
+      role: 'SENTRY' as const,
+      lat: 54.4095,
+      lon: 18.541,
+      heading: 0,
+      speedMps: 2.0,
+      patrolWaypoints: [
+        [18.541, 54.4095] as [number, number],
+        [18.543, 54.411] as [number, number],
+      ],
+      currentWaypointIndex: 0,
+      state: 'PATROLLING' as const,
+      detectionRadiusMeters: 60,
+      healthPercent: 100,
+    };
+
+    // Blue force operator 35m away
+    const bluePeer: BlueForcePeer = {
+      id: 'op_blue_1',
+      callsign: 'Viper-1',
+      squad: 'squad_alpha',
+      role: 'POINTMAN',
+      lat: 54.4097,
+      lon: 18.5413,
+      battery: 90,
+      status: 'ACTIVE',
+      hlc: 't1',
+      updatedAt: Date.now(),
+    };
+
+    const sim = tickOpforSimulation({
+      bots: [bot],
+      deltaSeconds: 2,
+      blueForcePeers: [bluePeer],
+    });
+
+    expect(sim.contactAlerts.length).toBe(1);
+    expect(sim.contactAlerts[0].botCallsign).toBe('Red-Sentry-1');
+    expect(sim.contactAlerts[0].targetCallsign).toBe('Viper-1');
+    expect(sim.updatedBots[0].state).toBe('ENGAGING');
+  });
+
+  it('generates a procedural balanced scenario with valid DAG and patrolling bots', () => {
+    const scenario = generateProceduralScenario(54.4095, 18.541, 'RAID');
+
+    expect(scenario.scenarioId).toContain('OP_RAID');
+    expect(Object.keys(scenario.graph.nodes).length).toBe(4);
+    expect(scenario.opforBots.length).toBeGreaterThanOrEqual(2);
+    expect(scenario.opforBots.every((b) => b.patrolWaypoints.length >= 2)).toBe(true);
+  });
+});
+
+describe('Version 2.0: Tactical Acoustic Voice Burst Protocol', () => {
+  it('creates and parses tactical quick-shout binary frames', () => {
+    const frame = createQuickShoutFrame('op_lead_1', 'Ghost-1', 'squad_alpha', 'CONTACT_FRONT', 1234);
+
+    expect(frame.magic).toBe(0x5642);
+    expect(frame.sequenceId).toBe(1234);
+    expect(frame.quickShout).toBe('CONTACT_FRONT');
+    expect(frame.textMessage).toContain('CONTACT FRONT');
+    expect(frame.rawBytes.length).toBeLessThan(64);
+
+    const parsed = parseVoiceBurstFrame(frame.rawBytes);
+    expect(parsed).not.toBeNull();
+    expect(parsed?.operatorId).toBe('op_lead_1');
+    expect(parsed?.callsign).toBe('Ghost-1');
+    expect(parsed?.squad).toBe('squad_alpha');
+    expect(parsed?.quickShout).toBe('CONTACT_FRONT');
+    expect(parsed?.textMessage).toContain('SUPPRESSING FIRE');
   });
 });
 

@@ -15,6 +15,7 @@ import {
   createSignedMissionManifest,
   exportManifestToJSON,
   generateAARMissionReplay,
+  exportBattlespaceToCoT,
   OperatorRosterEntry,
 } from '@gridcommand/crdt-core';
 import {
@@ -22,6 +23,8 @@ import {
   MissionDAGEditorWidget,
   AARPlaybackWidget,
   LoraTransceiverWidget,
+  WeatherEWConsoleWidget,
+  OpforMissionGeneratorWidget,
   TacticalButton,
 } from '@gridcommand/ui-theme';
 import { generateKeyPair, toHexString } from '@gridcommand/crypto';
@@ -51,6 +54,9 @@ export const App: React.FC = () => {
   const [showMissionBuilder, setShowMissionBuilder] = useState<boolean>(false);
   const [showAARModal, setShowAARModal] = useState<boolean>(false);
   const [showLoraModal, setShowLoraModal] = useState<boolean>(false);
+  const [showWeatherModal, setShowWeatherModal] = useState<boolean>(false);
+  const [showOpforModal, setShowOpforModal] = useState<boolean>(false);
+  const [cotExportSuccess, setCotExportSuccess] = useState<boolean>(false);
   const [roster, setRoster] = useState<OperatorRosterEntry[]>(getDefaultRoster());
 
   const aarReplay = useMemo(() => generateAARMissionReplay('MISSION_GDANSK_2026', 1800), []);
@@ -106,6 +112,23 @@ export const App: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleExportCoT = () => {
+    const cotXml = exportBattlespaceToCoT({
+      peers: Object.values(peers),
+      graph,
+      markers: Object.values(markers),
+    });
+    const blob = new Blob([cotXml], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gridcommand_cot_${matchId.toLowerCase()}.xml`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setCotExportSuccess(true);
+    setTimeout(() => setCotExportSuccess(false), 3000);
+  };
+
   // Calculate squad scores
   let alphaScore = 0;
   let bravoScore = 0;
@@ -148,38 +171,55 @@ export const App: React.FC = () => {
         </div>
 
         {/* Live Scoreboard & Quick Tool Buttons */}
-        <div className="flex items-center gap-3 text-xs font-black">
+        <div className="flex items-center gap-2 text-xs font-black flex-wrap">
           <button
             onClick={() => setShowMissionBuilder(true)}
-            className="px-2.5 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#4e9b4e] text-[#68d391] rounded text-[11px] font-bold flex items-center gap-1.5 transition-colors"
+            className="px-2 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#4e9b4e] text-[#68d391] rounded text-[11px] font-bold flex items-center gap-1 transition-colors"
           >
-            <span>🛠️ MISSION BUILDER</span>
+            <span>🛠️ MISSIONS</span>
           </button>
           <button
             onClick={() => setShowLosModal(true)}
-            className="px-2.5 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#f5b700] text-[#f5b700] rounded text-[11px] font-bold flex items-center gap-1.5 transition-colors"
+            className="px-2 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#f5b700] text-[#f5b700] rounded text-[11px] font-bold flex items-center gap-1 transition-colors"
           >
-            <span>📡 LOS ANALYZER</span>
+            <span>📡 LOS</span>
           </button>
           <button
             onClick={() => setShowAARModal(true)}
-            className="px-2.5 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#38bdf8] text-[#38bdf8] rounded text-[11px] font-bold flex items-center gap-1.5 transition-colors"
+            className="px-2 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#38bdf8] text-[#38bdf8] rounded text-[11px] font-bold flex items-center gap-1 transition-colors"
           >
-            <span>⏱️ AAR &amp; AUDIT</span>
+            <span>⏱️ AAR</span>
           </button>
           <button
             onClick={() => setShowLoraModal(true)}
-            className="px-2.5 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#a855f7] text-[#c084fc] rounded text-[11px] font-bold flex items-center gap-1.5 transition-colors"
+            className="px-2 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#a855f7] text-[#c084fc] rounded text-[11px] font-bold flex items-center gap-1 transition-colors"
           >
-            <span>📻 LORA BRIDGE</span>
+            <span>📻 LORA</span>
           </button>
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-[#4e9b4e]/20 border border-[#4e9b4e] text-[#68d391] rounded">
-            <span>ALPHA:</span>
-            <span>{alphaScore} PTS</span>
+          <button
+            onClick={() => setShowWeatherModal(true)}
+            className="px-2 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#eab308] text-[#facc15] rounded text-[11px] font-bold flex items-center gap-1 transition-colors"
+          >
+            <span>🌪️ MET/EW</span>
+          </button>
+          <button
+            onClick={() => setShowOpforModal(true)}
+            className="px-2 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#ef4444] text-[#f87171] rounded text-[11px] font-bold flex items-center gap-1 transition-colors"
+          >
+            <span>🤖 OPFOR</span>
+          </button>
+          <button
+            onClick={handleExportCoT}
+            className="px-2 py-1 bg-[#1c261c] hover:bg-[#253325] border border-[#06b6d4] text-[#22d3ee] rounded text-[11px] font-bold flex items-center gap-1 transition-colors"
+            title="Download ATAK / CivTAK Cursor-on-Target XML"
+          >
+            <span>{cotExportSuccess ? '✓ CoT SAVED' : '🌐 ATAK CoT'}</span>
+          </button>
+          <div className="flex items-center gap-1 px-2.5 py-1 bg-[#4e9b4e]/20 border border-[#4e9b4e] text-[#68d391] rounded">
+            <span>ALPHA: {alphaScore}</span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-[#8a6240]/25 border border-[#a67c52] text-[#d4a373] rounded">
-            <span>BRAVO:</span>
-            <span>{bravoScore} PTS</span>
+          <div className="flex items-center gap-1 px-2.5 py-1 bg-[#8a6240]/25 border border-[#a67c52] text-[#d4a373] rounded">
+            <span>BRAVO: {bravoScore}</span>
           </div>
         </div>
       </header>
@@ -426,6 +466,72 @@ export const App: React.FC = () => {
             <div className="flex justify-end pt-2 border-t border-[#2e3d2e]">
               <TacticalButton size="compact" variant="olive" onClick={() => setShowLoraModal(false)}>
                 CLOSE LORA CONSOLE
+              </TacticalButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Version 2.0: Weather & EW Console Modal */}
+      {showWeatherModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-5xl max-h-[92vh] overflow-y-auto bg-[#141c14] border-2 border-amber-500 rounded-lg shadow-2xl p-4 flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b border-[#2e3d2e] pb-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-amber-500 rounded-sm" />
+                <h3 className="text-sm font-black text-amber-400 uppercase tracking-wider">
+                  TACTICAL ENVIRONMENT &amp; ELECTRONIC WARFARE (EW)
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowWeatherModal(false)}
+                className="text-[#9ba89b] hover:text-white font-black px-2 py-0.5 rounded"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="w-full">
+              <WeatherEWConsoleWidget />
+            </div>
+
+            <div className="flex justify-end pt-2 border-t border-[#2e3d2e]">
+              <TacticalButton size="compact" variant="olive" onClick={() => setShowWeatherModal(false)}>
+                DISMISS CONSOLE
+              </TacticalButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Version 2.0: OPFOR Bot Fleet & Procedural Scenario Modal */}
+      {showOpforModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-5xl max-h-[92vh] overflow-y-auto bg-[#141c14] border-2 border-red-500 rounded-lg shadow-2xl p-4 flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b border-[#2e3d2e] pb-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 bg-red-500 rounded-sm" />
+                <h3 className="text-sm font-black text-red-400 uppercase tracking-wider">
+                  OPFOR RED-TEAM BOT FLEET &amp; PROCEDURAL SCENARIO GENERATOR
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowOpforModal(false)}
+                className="text-[#9ba89b] hover:text-white font-black px-2 py-0.5 rounded"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="w-full">
+              <OpforMissionGeneratorWidget
+                onExportCoT={handleExportCoT}
+              />
+            </div>
+
+            <div className="flex justify-end pt-2 border-t border-[#2e3d2e]">
+              <TacticalButton size="compact" variant="olive" onClick={() => setShowOpforModal(false)}>
+                DISMISS OPFOR FLEET
               </TacticalButton>
             </div>
           </div>

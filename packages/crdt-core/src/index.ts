@@ -12,4 +12,8 @@ export * from './aarEngine';
 export * from './antiCheatAudit';
 export * from './loraBridge';
 export * from './sensorFusion';
+export * from './cotGateway';
+export * from './tacticalEnvironment';
+export * from './opforSimulation';
+export * from './voiceBurst';
 

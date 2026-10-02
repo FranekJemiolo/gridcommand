@@ -7,4 +7,8 @@ export * from './components/MissionDAGEditorWidget';
 export * from './components/AARPlaybackWidget';
 export * from './components/WearableSubHUDWidget';
 export * from './components/LoraTransceiverWidget';
+export * from './components/ARCameraOverlayWidget';
+export * from './components/WeatherEWConsoleWidget';
+export * from './components/TacticalIntercomWidget';
+export * from './components/OpforMissionGeneratorWidget';
 export * from './audio/tacticalAudio';

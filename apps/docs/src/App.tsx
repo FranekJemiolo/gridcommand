@@ -24,6 +24,10 @@ import {
   AARPlaybackWidget,
   LoraTransceiverWidget,
   WearableSubHUDWidget,
+  ARCameraOverlayWidget,
+  WeatherEWConsoleWidget,
+  TacticalIntercomWidget,
+  OpforMissionGeneratorWidget,
 } from '@gridcommand/ui-theme';
 import {
   latLonToMGRS,
@@ -34,12 +38,14 @@ import {
   revokeOperator,
   reinstateOperator,
   generateAARMissionReplay,
+  exportBattlespaceToCoT,
+  generateProceduralScenario,
   MissionGraph,
   OperatorRosterEntry,
 } from '@gridcommand/crdt-core';
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'mobile-hud' | 'gm-center' | 'mesh-sim' | 'bom' | 'roadmap'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'mobile-hud' | 'gm-center' | 'mesh-sim' | 'bom' | 'roadmap' | 'v2-showcase'>('overview');
   const [demoRedMode, setDemoRedMode] = useState(false);
   const [demoRainLock, setDemoRainLock] = useState(false);
   const [demoCaptured, setDemoCaptured] = useState(false);
@@ -133,18 +139,18 @@ export const App: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-3 text-xs font-mono">
-            {(['overview', 'mobile-hud', 'gm-center', 'mesh-sim', 'bom', 'roadmap'] as const).map((tab) => (
+          <div className="flex items-center gap-1 sm:gap-2 text-xs font-mono flex-wrap">
+            {(['overview', 'v2-showcase', 'mobile-hud', 'gm-center', 'mesh-sim', 'bom', 'roadmap'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-2.5 py-1.5 rounded uppercase font-bold transition-all ${
+                className={`px-2 py-1.5 rounded uppercase font-bold transition-all ${
                   activeTab === tab
                     ? 'bg-[#3b5323]/50 text-[#f5b700] border border-[#f5b700]'
                     : 'text-[#9ba89b] hover:text-[#e8ede8]'
                 }`}
               >
-                {tab === 'roadmap' ? 'ROADMAP 🚀' : tab.replace('-', ' ')}
+                {tab === 'v2-showcase' ? 'V2.0 EXTENSIONS ⚡' : tab === 'roadmap' ? 'ROADMAP 🚀' : tab.replace('-', ' ')}
               </button>
             ))}
 
@@ -176,18 +182,18 @@ export const App: React.FC = () => {
             Engineered to coordinate multi-squad tactical operations and civilian MilSim exercises in deep forest canopies, subterranean bunkers, and total cellular blackouts.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 font-mono text-xs">
+          <div className="flex flex-wrap items-center justify-center gap-3 font-mono text-xs">
+            <TacticalButton variant="yellow" onClick={() => setActiveTab('v2-showcase')}>
+              ⚡ VERSION 2.0 SHOWCASE
+            </TacticalButton>
             <TacticalButton variant="olive" onClick={() => setActiveTab('mobile-hud')}>
               LAUNCH MOBILE HUD DEMO
             </TacticalButton>
-            <TacticalButton variant="yellow" onClick={() => setActiveTab('gm-center')}>
-              EXPLORE GM COMMAND CENTER
+            <TacticalButton variant="coyote" onClick={() => setActiveTab('gm-center')}>
+              EXPLORE GM CENTER
             </TacticalButton>
-            <TacticalButton variant="coyote" onClick={() => setActiveTab('roadmap')}>
+            <TacticalButton variant="neutral" onClick={() => setActiveTab('roadmap')}>
               PRODUCT ROADMAP 🚀
-            </TacticalButton>
-            <TacticalButton variant="neutral" onClick={() => setActiveTab('mesh-sim')}>
-              MESH TOPOLOGY VISUALIZER
             </TacticalButton>
           </div>
         </div>
@@ -1051,6 +1057,216 @@ export const App: React.FC = () => {
                     <LoraTransceiverWidget />
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Version 2.0 Showcase Tab */}
+        {activeTab === 'v2-showcase' && (
+          <div className="space-y-12">
+            {/* Header Banner */}
+            <div className="bg-gradient-to-r from-[#141c14] via-[#1c261c] to-[#141c14] border-2 border-[#f5b700] rounded-xl p-8 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                <Shield className="w-64 h-64 text-[#f5b700]" />
+              </div>
+              <div className="relative z-10 max-w-3xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/50 bg-amber-500/10 text-amber-300 font-mono text-xs mb-4">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  VERSION 2.0 // TACTICAL FIELD OPERATING SYSTEM
+                </div>
+                <h2 className="text-3xl sm:text-4xl font-black font-mono text-white mb-3">
+                  Next-Gen Tactical Capabilities for Admins &amp; Operators
+                </h2>
+                <p className="text-sm sm:text-base font-mono text-[#9ba89b] leading-relaxed">
+                  GridCommand Version 2.0 elevates the decentralized state machine into a complete, military-grade operational command environment. Featuring native ATAK Cursor-on-Target (CoT) interoperability, dynamic micro-weather simulation, EW jamming emitters, autonomous Red-Team OPFOR bots, Augmented Reality (AR) HUD sights, and tactical acoustic voice burst communications.
+                </p>
+              </div>
+            </div>
+
+            {/* Matrix: Admin vs Operator Capabilities */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 font-mono">
+              <div className="bg-[#141c14] border border-[#f5b700]/60 rounded-xl p-6 shadow-xl space-y-4">
+                <div className="flex items-center gap-2 border-b border-[#2e3d2e] pb-3">
+                  <span className="text-xl">🎖️</span>
+                  <div>
+                    <h3 className="font-bold text-base text-[#f5b700]">ADMIN &amp; GAME MASTER SUITE</h3>
+                    <p className="text-xs text-[#9ba89b]">Tactical Control, Electronic Warfare &amp; Simulation Engine</p>
+                  </div>
+                </div>
+                <ul className="text-xs space-y-2.5 text-[#e8ede8]">
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-400 font-bold">•</span>
+                    <span><strong>ATAK CoT Gateway:</strong> Bi-directional MIL-STD-2525 Cursor-on-Target XML export to WinTAK, CivTAK, and QGIS.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-400 font-bold">•</span>
+                    <span><strong>Dynamic Weather Engine:</strong> Rain, fog, and smoke dispersion with downwind drift vectors and RF attenuation.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-400 font-bold">•</span>
+                    <span><strong>Electronic Warfare (EW):</strong> Deployable GPS/GNSS L1 denial zones and Sub-GHz barrage jammers with packet drop modeling.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-400 font-bold">•</span>
+                    <span><strong>Autonomous OPFOR Fleet:</strong> Red-Team bots with waypoint patrol AI, line-of-sight checks, and engagement state transitions.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-400 font-bold">•</span>
+                    <span><strong>Procedural Scenario Generator:</strong> 1-click synthesis of balanced DAG mission objectives and patrol routes over any MGRS sector.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="bg-[#141c14] border border-[#68d391]/60 rounded-xl p-6 shadow-xl space-y-4">
+                <div className="flex items-center gap-2 border-b border-[#2e3d2e] pb-3">
+                  <span className="text-xl">🪖</span>
+                  <div>
+                    <h3 className="font-bold text-base text-[#68d391]">FIELD USER &amp; OPERATOR SUITE</h3>
+                    <p className="text-xs text-[#9ba89b]">Spatial Awareness, Optics &amp; Low-Signature Comms</p>
+                  </div>
+                </div>
+                <ul className="text-xs space-y-2.5 text-[#e8ede8]">
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold">•</span>
+                    <span><strong>AR Spatial Camera HUD:</strong> Stadiametric laser rangefinder, artificial horizon, and 3D floating objective pins.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold">•</span>
+                    <span><strong>Multi-Spectrum Optics:</strong> Toggle between Phosphor Green NVG, FLIR White-Hot Thermal, and High-Contrast Daylight.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold">•</span>
+                    <span><strong>Acoustic Quick-Shouts:</strong> 1-tap tactical audio packets (CONTACT FRONT, CASUALTY, FALL BACK) transmitted under 500ms.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold">•</span>
+                    <span><strong>Encrypted Voice Bursts:</strong> Push-to-Talk 32kbps micro-audio bursts compressed into LoRa MTU sub-packets.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 font-bold">•</span>
+                    <span><strong>Wearable Sub-HUD &amp; MGRS Compass:</strong> Real-time clock position, distance, and tilt-compensated magnetic heading.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Live Interactive Laboratories */}
+            <div className="space-y-10">
+              <div className="border-b border-[#2e3d2e] pb-2">
+                <h3 className="text-xl font-bold font-mono text-[#f5b700] flex items-center gap-2">
+                  <span>🔬</span>
+                  <span>VERSION 2.0 INTERACTIVE LABORATORIES</span>
+                </h3>
+                <p className="text-xs font-mono text-[#9ba89b] mt-1">
+                  Interact directly with the live Version 2.0 operational widgets embedded below.
+                </p>
+              </div>
+
+              {/* Lab 1: AR Camera Overlay HUD */}
+              <div className="bg-[#141c14] border border-[#2e3d2e] rounded-xl p-5 shadow-xl space-y-3">
+                <div className="flex items-center justify-between border-b border-[#2e3d2e] pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-emerald-400 rounded-sm" />
+                    <span className="text-sm font-black font-mono text-emerald-400 uppercase tracking-wider">
+                      LAB 1: AUGMENTED REALITY (AR) FIELD SIGHT &amp; STADIAMETRIC HUD
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-[#9ba89b] hidden sm:inline">
+                    NVG / FLIR OPTICS // 3D PIN PERSPECTIVE
+                  </span>
+                </div>
+                <ARCameraOverlayWidget />
+              </div>
+
+              {/* Lab 2: Weather, Smoke & EW Console */}
+              <div className="bg-[#141c14] border border-[#2e3d2e] rounded-xl p-5 shadow-xl space-y-3">
+                <div className="flex items-center justify-between border-b border-[#2e3d2e] pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-amber-400 rounded-sm" />
+                    <span className="text-sm font-black font-mono text-amber-400 uppercase tracking-wider">
+                      LAB 2: BATTLESPACE ENVIRONMENT, SMOKE DRIFT &amp; EW JAMMING CONSOLE
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-[#9ba89b] hidden sm:inline">
+                    STANAG MET // GPS DENIAL MODELING
+                  </span>
+                </div>
+                <WeatherEWConsoleWidget />
+              </div>
+
+              {/* Lab 3: Tactical Intercom & Voice Bursts */}
+              <div className="bg-[#141c14] border border-[#2e3d2e] rounded-xl p-5 shadow-xl space-y-3">
+                <div className="flex items-center justify-between border-b border-[#2e3d2e] pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-cyan-400 rounded-sm" />
+                    <span className="text-sm font-black font-mono text-cyan-400 uppercase tracking-wider">
+                      LAB 3: TACTICAL INTERCOM &amp; 1-TAP ACOUSTIC QUICK-SHOUT TRANSMITTER
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-[#9ba89b] hidden sm:inline">
+                    PTT OPUS BURSTS // CRC16 ARQ CONFIRMATION
+                  </span>
+                </div>
+                <TacticalIntercomWidget />
+              </div>
+
+              {/* Lab 4: OPFOR Bot Fleet & Scenario Generator */}
+              <div className="bg-[#141c14] border border-[#2e3d2e] rounded-xl p-5 shadow-xl space-y-3">
+                <div className="flex items-center justify-between border-b border-[#2e3d2e] pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-red-400 rounded-sm" />
+                    <span className="text-sm font-black font-mono text-red-400 uppercase tracking-wider">
+                      LAB 4: AUTONOMOUS OPFOR BOT FLEET &amp; PROCEDURAL SCENARIO SYNTHESIZER
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-[#9ba89b] hidden sm:inline">
+                    PATROL WAYPOINT AI // PROCEDURAL DAG GRAPH
+                  </span>
+                </div>
+                <OpforMissionGeneratorWidget />
+              </div>
+            </div>
+
+            {/* Installation & Deployment Guide */}
+            <div className="bg-[#141c14] border border-[#2e3d2e] rounded-xl p-8 shadow-xl space-y-6 font-mono">
+              <div className="border-b border-[#2e3d2e] pb-3">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <span>🚀</span>
+                  <span>PRODUCTION INSTALLATION &amp; AIR-GAPPED DEPLOYMENT GUIDE</span>
+                </h3>
+                <p className="text-xs text-[#9ba89b] mt-1">
+                  Step-by-step procedures for deploying GridCommand v2.0 in headquarters or on air-gapped tactical field hardware.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+                <div className="space-y-3">
+                  <h4 className="font-bold text-[#f5b700] uppercase">1. AUTOMATED ONE-STEP HOST INSTALLER</h4>
+                  <p className="text-[#9ba89b]">
+                    Installs Node.js 22 LTS, pnpm, and Python Astral uv, builds all 6 packages, and executes regression verification:
+                  </p>
+                  <pre className="p-3 bg-black/60 rounded border border-[#2e3d2e] text-[#68d391] overflow-x-auto">
+                    <code>git clone https://github.com/FranekJemiolo/gridcommand.git&#10;cd gridcommand&#10;chmod +x deploy/install.sh&#10;./deploy/install.sh</code>
+                  </pre>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="font-bold text-[#38bdf8] uppercase">2. DOCKER COMPOSE PRODUCTION STACK</h4>
+                  <p className="text-[#9ba89b]">
+                    Launches Redis 7 cache, FastAPI sync gateway, Nginx unified reverse proxy, and all frontend PWAs:
+                  </p>
+                  <pre className="p-3 bg-black/60 rounded border border-[#2e3d2e] text-[#38bdf8] overflow-x-auto">
+                    <code>docker compose -f deploy/docker-compose.prod.yml up -d&#10;# Access GM Center on port 8080&#10;# Access Mobile PWA on port 8081&#10;# Access Documentation on port 8082</code>
+                  </pre>
+                </div>
+              </div>
+
+              <div className="p-4 bg-black/40 rounded border border-[#4e9b4e]/40 text-xs space-y-2">
+                <div className="font-bold text-[#68d391]">PORTABLE AIR-GAPPED TACTICAL SERVER (RASPBERRY PI 5):</div>
+                <p className="text-[#9ba89b]">
+                  Flash a 64GB High-Endurance microSD card with Raspberry Pi OS Lite (64-bit). Connect a USB SX1262 LoRa transceiver to <code>/dev/ttyUSB0</code>. Clone the repository, execute <code>./deploy/install.sh</code>, and enable the systemd service. Operators connect to the local Wi-Fi AP <code>GridCommand-Mesh</code> with zero cellular or internet connection required.
+                </p>
               </div>
             </div>
           </div>

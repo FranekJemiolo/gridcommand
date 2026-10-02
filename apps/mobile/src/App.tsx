@@ -5,6 +5,8 @@ import {
   StatusBadge,
   CompassBearing,
   WearableSubHUDWidget,
+  ARCameraOverlayWidget,
+  TacticalIntercomWidget,
 } from '@gridcommand/ui-theme';
 import { useGameStore } from './stores/gameStore';
 import { TacticalMap } from './components/TacticalMap';
@@ -50,6 +52,8 @@ export const App: React.FC = () => {
   const [isElevationModalOpen, setIsElevationModalOpen] = useState(false);
   const [isOfflineModalOpen, setIsOfflineModalOpen] = useState(false);
   const [isWearableModalOpen, setIsWearableModalOpen] = useState(false);
+  const [isARModalOpen, setIsARModalOpen] = useState(false);
+  const [isIntercomModalOpen, setIsIntercomModalOpen] = useState(false);
   const [isCoordMgrs, setIsCoordMgrs] = useState(true);
   const [copiedNotification, setCopiedNotification] = useState(false);
 
@@ -239,28 +243,37 @@ export const App: React.FC = () => {
                 </TacticalButton>
               </div>
 
-              <div className="flex items-center justify-between gap-2 pt-1">
+              <div className="flex items-center justify-between gap-1.5 pt-1 flex-wrap">
                 <button
                   onClick={toggleRigPitch}
                   className="text-[10px] text-[#9ba89b] hover:text-[#e8ede8] border border-[#2e3d2e] px-2 py-1 rounded bg-[#0b0f0b]"
                 >
-                  RIG PITCH: {rigPitch ? '45° (CHEST)' : '0° (FLAT)'}
+                  RIG PITCH: {rigPitch ? '45°' : '0°'}
                 </button>
                 <button
                   onClick={toggleAudio}
                   className="text-[10px] text-[#f5b700] hover:text-[#e8ede8] border border-[#2e3d2e] px-2 py-1 rounded bg-[#0b0f0b] flex items-center gap-1 font-bold"
                 >
-                  AUDIO: {audioEnabled ? 'ON 🔊' : 'MUTED 🔇'}
+                  AUDIO: {audioEnabled ? '🔊' : '🔇'}
                 </button>
                 <button
                   onClick={() => setIsWearableModalOpen(true)}
                   className="text-[10px] text-[#38bdf8] hover:text-[#e8ede8] border border-[#38bdf8]/40 px-2 py-1 rounded bg-[#0b0f0b] flex items-center gap-1 font-bold"
                 >
-                  ⌚ WRIST HUD
+                  ⌚ WRIST
                 </button>
-                <div className="text-[10px] text-[#9ba89b] hidden sm:block">
-                  VOL UP: CONFIRM PIN
-                </div>
+                <button
+                  onClick={() => setIsARModalOpen(true)}
+                  className="text-[10px] text-emerald-400 hover:text-[#e8ede8] border border-emerald-500/40 px-2 py-1 rounded bg-[#0b0f0b] flex items-center gap-1 font-bold"
+                >
+                  📷 AR HUD
+                </button>
+                <button
+                  onClick={() => setIsIntercomModalOpen(true)}
+                  className="text-[10px] text-amber-400 hover:text-[#e8ede8] border border-amber-500/40 px-2 py-1 rounded bg-[#0b0f0b] flex items-center gap-1 font-bold"
+                >
+                  🎙️ PTT
+                </button>
               </div>
             </div>
           </div>
@@ -552,6 +565,56 @@ export const App: React.FC = () => {
                 DISMISS WEARABLE
               </TacticalButton>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Version 2.0: AR Field Camera HUD Modal */}
+      {isARModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md animate-fadeIn">
+          <div className="w-full max-w-2xl bg-[#141c14] border-2 border-emerald-500 rounded-xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between bg-black/80 px-4 py-2 border-b border-emerald-500/40">
+              <span className="text-xs font-black text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                AR TACTICAL SIGHT // STADIAMETRIC FIELD OVERLAY
+              </span>
+              <button
+                onClick={() => setIsARModalOpen(false)}
+                className="text-[#9ba89b] hover:text-white font-black px-2 py-0.5 text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            <ARCameraOverlayWidget
+              initialHeading={heading}
+              onClose={() => setIsARModalOpen(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Version 2.0: Tactical Intercom & Voice Burst Modal */}
+      {isIntercomModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md animate-fadeIn">
+          <div className="w-full max-w-2xl bg-[#141c14] border-2 border-amber-500 rounded-xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between bg-black/80 px-4 py-2 border-b border-amber-500/40">
+              <span className="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                TACTICAL ACOUSTIC INTERCOM // ENCRYPTED VOICE BURST
+              </span>
+              <button
+                onClick={() => setIsIntercomModalOpen(false)}
+                className="text-[#9ba89b] hover:text-white font-black px-2 py-0.5 text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            <TacticalIntercomWidget
+              currentCallsign="VIPER-1"
+              currentSquad="squad_alpha"
+            />
           </div>
         </div>
       )}
